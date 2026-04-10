@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8"><title>السجل الشامل للقطاع</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <div class="container fade-in">
+        <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
+        
+        <div class="card" style="border-color: var(--text-muted);">
+            <h2 style="color: white; margin-bottom: 20px;">📂 السجل الشامل (Audit Trail)</h2>
+            <input type="text" id="searchArchive" class="search-bar" placeholder="🔍 ابحث بالاسم، الآيدي، أو نوع الإجراء..." onkeyup="filterTable('searchArchive', 'archiveTable')">
+            
+            <div class="scrollable-box" style="max-height: 70vh;">
+                <table id="archiveTable" style="background: rgba(0,0,0,0.2);">
+                    <tr class="header-row"><th>الاسم والآيدي</th> <th>التفاصيل</th> <th>المسؤول</th> <th>التاريخ (الأحدث أولاً)</th> <th>البيانات</th></tr>
+                    <% 
+                    let allLogs = [];
+                    Object.entries(archive).forEach(([id, userLogs]) => { if(Array.isArray(userLogs)) { userLogs.forEach((log, index) => { allLogs.push({ userId: id, logIndex: index, ...log }); }); } });
+                    allLogs.sort((a, b) => { return (b.timestamp || 0) - (a.timestamp || 0); });
+                    %>
+                    <% allLogs.forEach(log => { %>
+                        <tr class="searchable-row">
+                            <td style="color: white;"><%= log.username %><br><span style="color:gray; font-size:12px;"><%= log.userId %></span></td>
+                            <td>
+                                <% if(log.type === 'enlist') { %> <span style="color:var(--success); font-weight:bold;">تجنيد نهائي</span>
+                                <% } else if(log.type === 'fail_training') { %> <span style="color:var(--danger); font-weight:bold;">عدم اجتياز الدورة</span>
+                                <% } else if(log.type === 'reject') { %> <span style="color:#e74c3c; font-weight:bold;">رفض تقديم مبدئي</span>
+                                <% } else if(log.type === 'promotion') { %> <span style="color:var(--warning); font-weight:bold;">تعديل رتبة الموقع</span>
+                                <% } else if(log.type === 'fire') { %> <span style="color:var(--danger); font-weight:bold;">فصل من القطاع</span>
+                                <% } else if(log.type === 'discord') { %> <span style="color:var(--primary); font-weight:bold;">تعديل فئة الديسكورد</span>
+                                <% } else { %> <span style="color:white;"><%= log.type %></span> <% } %>
+                                <br><span style="color:var(--text-muted); font-size:13px;"><%= log.details %></span>
+                            </td>
+                            <td style="color: var(--primary);"><%= log.actionBy %></td>
+                            <td style="color: var(--text-muted); font-size:12px;"><%= log.date %></td>
+                            <td style="text-align:center;">
+                                <% if (log.answers) { %><button class="btn-primary" style="padding: 5px 15px; font-size: 13px;" onclick="document.getElementById('modal_log_<%= log.userId %>_<%= log.logIndex %>').style.display='block'">عرض 📝</button><% } else { %> <span style="color:gray; font-size: 12px;">-</span> <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <% allLogs.forEach(log => { %>
+        <% if (log.answers) { %>
+            <div id="modal_log_<%= log.userId %>_<%= log.logIndex %>" class="modal">
+                <div class="modal-content"><span class="close-btn" onclick="document.getElementById('modal_log_<%= log.userId %>_<%= log.logIndex %>').style.display='none'">&times;</span>
+                    <h2 style="color:var(--primary); margin-bottom:20px; text-align:center;">إجابات المتقدم (<%= log.date %>)</h2>
+                    <% Object.entries(log.answers).forEach(([key, answer]) => { %><div style="color: var(--warning); font-size: 16px; margin-bottom: 5px; font-weight: bold;"><%= questions.find((q, i) => 'q_'+i === key)?.label || key %></div><div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: white; line-height: 1.6;"><%= answer %></div><% }) %>
+                </div>
+            </div>
+        <% } %>
+    <% }) %>
+
+    <script>
+        function filterTable(inputId, tableId) { const filter = document.getElementById(inputId).value.toLowerCase(); const rows = document.getElementById(tableId).getElementsByClassName('searchable-row'); for (let i = 0; i < rows.length; i++) { let text = rows[i].innerText.toLowerCase(); rows[i].style.display = text.includes(filter) ? "" : "none"; } }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) { event.target.style.display = "none"; } }
+    </script>
+</body>
+</html>

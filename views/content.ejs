@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container">
+        <h1 style="text-align:center; color: var(--primary); margin-bottom: 10px;"><%= pageTitle %></h1>
+        <p style="text-align:center; color: var(--text-muted); margin-bottom: 40px;"><%= locals.pageDesc || '' %></p>
+
+        <% if (user && user.perms.isOfficer) { %>
+            <div class="card" style="border-color: var(--warning);">
+                <h3 style="color: var(--warning); margin-bottom: 20px;">⚙️ إضافة عنصر جديد</h3>
+                <form action="/content/add" method="POST">
+                    <input type="hidden" name="section" value="<%= section %>">
+                    <input type="text" name="title" required placeholder="العنوان / السلاح">
+                    <textarea name="description" required rows="3" placeholder="الوصف..."></textarea>
+                    <% if (section === 'armory') { %>
+                        <input type="url" name="imageUrl" placeholder="رابط الصورة (اختياري)">
+                    <% } %>
+                    <button type="submit" class="btn-success">إضافة</button>
+                </form>
+            </div>
+        <% } %>
+
+        <% if (items.length === 0) { %>
+            <h3 style="text-align:center; color: var(--text-muted);">لا توجد عناصر مضافة.</h3>
+        <% } else { %>
+            <div class="<%= section === 'armory' ? 'grid-container' : '' %>">
+                <% items.forEach((item, index) => { %>
+                    <div class="<%= section === 'armory' ? 'item-card' : 'card' %>">
+                        <% if (item.imageUrl && section === 'armory') { %>
+                            <img src="<%= item.imageUrl %>" class="item-image" alt="صورة">
+                        <% } %>
+                        <div class="item-content">
+                            <h2 class="item-title"><%= item.title %></h2>
+                            <p class="item-desc"><%= item.description %></p>
+                            <% if (user && user.perms.isOfficer) { %>
+                                <form action="/content/delete" method="POST" onsubmit="return confirm('تأكيد الحذف؟');">
+                                    <input type="hidden" name="section" value="<%= section %>">
+                                    <input type="hidden" name="index" value="<%= index %>">
+                                    <button type="submit" class="btn-danger">حذف</button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

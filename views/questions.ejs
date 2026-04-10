@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8"><title>صياغة الأسئلة</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <div class="container fade-in">
+        <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
+        <div class="card" style="border-color: var(--primary);">
+            <h2 style="color: var(--primary); margin-bottom: 20px;">📝 صياغة أسئلة التقديم</h2>
+            <form action="/system/questions/add" method="POST" style="display:flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" name="questionLabel" required placeholder="اكتب السؤال الجديد هنا..." style="margin:0;"><button class="btn-success">إضافة سؤال</button>
+            </form>
+            <div class="scrollable-box">
+                <table style="background: rgba(0,0,0,0.3);">
+                    <% questions.forEach((q, index) => { %>
+                        <tr>
+                            <td style="color: white; width: 70%;"><%= index + 1 %>. <%= q.label %></td>
+                            <td style="text-align:left; display: flex; gap: 10px; justify-content: flex-end;">
+                                <button type="button" class="btn-primary" style="padding: 5px 15px;" data-label="<%= q.label %>" onclick="editQuestion('<%= index %>', this.getAttribute('data-label'))">تعديل</button>
+                                <form action="/system/questions/delete" method="POST"><input type="hidden" name="index" value="<%= index %>"><button class="btn-danger" style="padding: 5px 15px;">حذف</button></form>
+                                <form id="formQ_<%= index %>" action="/system/questions/edit" method="POST" style="display:none;"><input type="hidden" name="index" value="<%= index %>"><input type="hidden" id="editQ_<%= index %>" name="newLabel"></form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>function editQuestion(index, currentLabel) { let r = prompt('تعديل السؤال:', currentLabel); if (r !== null && r.trim() !== '') { document.getElementById('editQ_' + index).value = r; document.getElementById('formQ_' + index).submit(); } }</script>
+</body>
+</html>

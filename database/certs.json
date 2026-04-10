@@ -1,0 +1,51 @@
+{
+  "settings": {
+    "motorcycle": {
+      "open": true,
+      "questions": [
+        {
+          "label": "لماذا تقدم"
+        }
+      ]
+    },
+    "operations": {
+      "open": false,
+      "questions": []
+    },
+    "aviation": {
+      "open": false,
+      "questions": []
+    },
+    "driving": {
+      "open": false,
+      "questions": []
+    },
+    "marksman": {
+      "open": false,
+      "questions": []
+    },
+    "train_motorcycle": {
+      "open": false,
+      "questions": []
+    },
+    "train_operations": {
+      "open": false,
+      "questions": []
+    },
+    "train_aviation": {
+      "open": false,
+      "questions": []
+    },
+    "train_driving": {
+      "open": false,
+      "questions": []
+    },
+    "train_marksman": {
+      "open": false,
+      "questions": []
+    }
+  },
+  "apps": {
+    "790664714116005928": {}
+  }
+}

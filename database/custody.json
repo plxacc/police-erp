@@ -1,0 +1,39 @@
+{
+  "weaponTypes": [
+    "mk2"
+  ],
+  "weaponLogs": [
+    {
+      "receiverDiscordId": "815635291087175721",
+      "receiverName": "alkarke",
+      "nationalId": "1212",
+      "weaponType": "mk2",
+      "serialNumber": "dfg",
+      "issuerName": "plxac",
+      "date": "٩‏/٤‏/٢٠٢٦، ١:٠١:٠٨ م"
+    },
+    {
+      "receiverDiscordId": "424655167645024256",
+      "receiverName": "b4hm_",
+      "nationalId": "1212",
+      "weaponType": "mk2",
+      "serialNumber": "dfg",
+      "issuerName": "plxac",
+      "date": "٩‏/٤‏/٢٠٢٦، ١:١٣:٥٨ م"
+    },
+    {
+      "receiverDiscordId": "790664714116005928",
+      "receiverName": "abual3zsa2304",
+      "nationalId": "1212",
+      "weaponType": "mk2",
+      "serialNumber": "11122",
+      "issuerName": "plxac",
+      "date": "٩‏/٤‏/٢٠٢٦، ١:١٤:٣٨ م"
+    }
+  ],
+  "vehicleLogs": [],
+  "rules": "احمل 3 ذخيره",
+  "vehicleTypes": [
+    "تورس"
+  ]
+}

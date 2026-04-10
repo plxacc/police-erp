@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة التقديمات</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container fade-in">
+        <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">لوحة استعلام التقديمات</h1>
+
+        <div class="collapsible-header" onclick="toggleSection('pendingSection')">
+            <h2 style="color: #f1c40f; margin:0;">⏳ طلبات قيد المراجعة (<%= Object.values(db).filter(d => d.status === 'applied').length %>)</h2><span style="color: white;">▼ طي / فتح</span>
+        </div>
+        <div id="pendingSection" class="collapsible-content">
+            <input type="text" id="searchPending" class="search-bar" placeholder="🔍 ابحث بالاسم أو الآيدي..." onkeyup="filterCards('searchPending', 'pendingContainer')">
+            <div id="pendingContainer" class="scrollable-box">
+                <% Object.entries(db).filter(([id, data]) => data.status === 'applied').forEach(([id, data]) => { %>
+                    <div class="card searchable-card" style="border-right: 5px solid #f1c40f;">
+                        <h3 class="card-title" style="color: var(--text-main);"><%= data.answers ? data.answers.rp_info : data.username %></h3>
+                        <p style="color: var(--primary); font-size: 14px;">ديسكورد: <%= data.username %></p>
+                        <div style="background: rgba(0,0,0,0.4); padding: 5px 15px; border-radius: 5px; display: inline-block; cursor: pointer; color: var(--text-muted); font-size: 13px; margin: 10px 0;" onclick="navigator.clipboard.writeText('<%= id %>'); showCustomToast('تم النسخ!', 'success');">
+                            ID: <%= id %> 📋
+                        </div>
+                        <div style="margin-top: 15px; display:flex; gap:10px; flex-wrap: wrap;">
+                            <button class="btn-primary" onclick="document.getElementById('modal_<%= id %>').style.display='block'">عرض الإجابات 📝</button>
+                            <form action="/admin/action" method="POST"><input type="hidden" name="userId" value="<%= id %>"><input type="hidden" name="action" value="accept"><button class="btn-success">قبول مبدئي</button></form>
+                            
+                            <form id="rejectForm_<%= id %>" action="/admin/action" method="POST">
+                                <input type="hidden" name="userId" value="<%= id %>">
+                                <input type="hidden" name="action" value="reject">
+                                <input type="hidden" name="reason" id="rejectReason_<%= id %>">
+                                <button type="button" class="btn-danger" onclick="rejectApplicant('<%= id %>')">رفض التقديم</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <div class="collapsible-header" onclick="toggleSection('acceptedSection')">
+            <h2 style="color: #23a559; margin:0;">✅ الطلبات المقبولة مبدئياً (<%= Object.values(db).filter(d => d.status === 'accepted').length %>)</h2><span style="color: white;">▼ طي / فتح</span>
+        </div>
+        <div id="acceptedSection" class="collapsible-content">
+            <input type="text" id="searchAccepted" class="search-bar" placeholder="🔍 ابحث بالاسم أو الآيدي..." onkeyup="filterCards('searchAccepted', 'acceptedContainer')">
+            <div id="acceptedContainer" class="scrollable-box">
+                <% Object.entries(db).filter(([id, data]) => data.status === 'accepted').forEach(([id, data]) => { %>
+                    <div class="card searchable-card" style="border-right: 5px solid #23a559; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div>
+                            <h3 class="card-title"><%= data.answers ? data.answers.rp_info : data.username %></h3>
+                            <p style="color: var(--text-muted); font-size: 14px;">ديسكورد: <%= data.username %> | ID: <%= id %></p>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top: 10px;">
+                            <button class="btn-primary" onclick="document.getElementById('modal_<%= id %>').style.display='block'">الإجابات 📝</button>
+                            <% if (user.perms.isOfficer) { %>
+                                <form action="/admin/enlist" method="POST"><input type="hidden" name="userId" value="<%= id %>"><button class="btn-success">تجنيد كعسكري</button></form>
+                            <% } %>
+                            
+                            <form id="failForm_<%= id %>" action="/admin/action" method="POST">
+                                <input type="hidden" name="userId" value="<%= id %>">
+                                <input type="hidden" name="action" value="fail_training">
+                                <input type="hidden" name="reason" id="failReason_<%= id %>">
+                                <button type="button" class="btn-danger" onclick="failTraining('<%= id %>')">عدم اجتياز الدورة</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <div class="collapsible-header" onclick="toggleSection('rejectedSection')">
+            <h2 style="color: #da373c; margin:0;">❌ الطلبات المرفوضة (<%= Object.values(db).filter(d => d.status === 'rejected').length %>)</h2><span style="color: white;">▼ طي / فتح</span>
+        </div>
+        <div id="rejectedSection" class="collapsible-content">
+            <input type="text" id="searchRejected" class="search-bar" placeholder="🔍 ابحث بالاسم أو الآيدي..." onkeyup="filterCards('searchRejected', 'rejectedContainer')">
+            <div id="rejectedContainer" class="scrollable-box">
+                <% Object.entries(db).filter(([id, data]) => data.status === 'rejected').forEach(([id, data]) => { %>
+                    <div class="card searchable-card" style="border-right: 5px solid #da373c; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div>
+                            <h3 class="card-title"><%= data.answers ? data.answers.rp_info : data.username %></h3>
+                            <p style="color: var(--text-muted); font-size: 14px;">ديسكورد: <%= data.username %> | ID: <%= id %></p>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top: 10px;">
+                            <button class="btn-primary" onclick="document.getElementById('modal_<%= id %>').style.display='block'">الإجابات 📝</button>
+                            <% if (user.perms.isOfficer) { %>
+                                <form action="/admin/action" method="POST"><input type="hidden" name="userId" value="<%= id %>"><input type="hidden" name="action" value="accept"><button class="btn-success">قبول مبدئي (تراجع)</button></form>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+
+    <% Object.entries(db).forEach(([id, data]) => { %>
+        <div id="modal_<%= id %>" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="document.getElementById('modal_<%= id %>').style.display='none'">&times;</span>
+                <h2 style="color:var(--primary); margin-bottom:20px; text-align:center;">إجابات المتقدم: <%= data.username %></h2>
+                <% if (data.answers) { %>
+                    <% Object.entries(data.answers).forEach(([key, answer]) => { %>
+                        <div style="color: var(--warning); font-size: 16px; margin-bottom: 5px; font-weight: bold;"><%= questions.find((q, i) => 'q_'+i === key)?.label || key %></div>
+                        <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: white; line-height: 1.6;"><%= answer %></div>
+                    <% }) %>
+                <% } else { %>
+                    <p>لا توجد إجابات مسجلة.</p>
+                <% } %>
+            </div>
+        </div>
+    <% }) %>
+
+    <script>
+        function toggleSection(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'none' ? 'block' : 'none'; }
+        function filterCards(inputId, containerId) {
+            const filter = document.getElementById(inputId).value.toLowerCase();
+            const cards = document.getElementById(containerId).getElementsByClassName('searchable-card');
+            for (let i = 0; i < cards.length; i++) { let text = cards[i].innerText.toLowerCase(); cards[i].style.display = text.includes(filter) ? "" : "none"; }
+        }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) { event.target.style.display = "none"; } }
+
+        // الدوال الآمنة لطلب السبب (بدون أخطاء في VS Code)
+        function rejectApplicant(userId) {
+            let reason = prompt('ما هو سبب الرفض المبدئي للتقديم؟');
+            if(reason !== null) {
+                document.getElementById('rejectReason_' + userId).value = reason;
+                document.getElementById('rejectForm_' + userId).submit();
+            }
+        }
+
+        function failTraining(userId) {
+            let reason = prompt('ما هو سبب عدم اجتياز الدورة العسكرية؟');
+            if(reason !== null) {
+                document.getElementById('failReason_' + userId).value = reason;
+                document.getElementById('failForm_' + userId).submit();
+            }
+        }
+    </script>
+</body>
+</html>

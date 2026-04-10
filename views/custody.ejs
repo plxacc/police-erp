@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>العهدة العسكرية</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <div class="container fade-in">
+        <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">🔫 نظام العهدة العسكرية</h1>
+
+        <div class="card" style="border-color: var(--primary); margin-bottom: 40px;">
+            <h2 style="color: var(--primary); margin-bottom: 15px;">📋 قوانين العهدة والذخيرة</h2>
+            <% if (user.perms.isOfficer) { %>
+                <p style="color: var(--warning); margin-bottom: 10px; font-size: 14px;">(يمكن للضباط فقط تعديل هذه القوانين)</p>
+                <form action="/custody/rules/update" method="POST">
+                    <textarea name="rules" rows="8" placeholder="اكتب هنا قوانين حمل الأسلحة، سعة الحقيبة، الخزنة الشخصية..." required><%= custody.rules || '' %></textarea>
+                    <button class="btn-success" style="margin-top: 10px;">حفظ وتحديث القوانين</button>
+                </form>
+            <% } else { %>
+                <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 8px; color: white; white-space: pre-wrap; line-height: 1.8; font-size: 16px;">
+                    <%= custody.rules || 'لا توجد قوانين مسجلة حالياً.' %>
+                </div>
+            <% } %>
+        </div>
+
+        <h2 style="color: white; text-align: center; margin-bottom: 20px;">📦 عهدتي المسجلة بالنظام</h2>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            
+            <div class="card" style="flex:1; min-width: 300px; border-color: #3498DB;">
+                <h3 style="color: #3498DB;">🔫 أسلحتي المصروفة</h3>
+                <% if(myWeapons.length === 0) { %>
+                    <p style="color:var(--text-muted); text-align:center; padding: 20px;">لا يوجد أسلحة في عهدتك.</p>
+                <% } else { %>
+                    <table style="background: rgba(0,0,0,0.2);">
+                        <tr class="header-row"><th>السلاح</th> <th>السيريال (S/N)</th> <th>تاريخ الصرف</th></tr>
+                        <% myWeapons.forEach(w => { %>
+                            <tr>
+                                <td style="color: white; font-weight:bold;"><%= w.weaponType %></td>
+                                <td style="color: var(--text-muted);"><%= w.serialNumber %></td>
+                                <td style="color: var(--warning); font-size:12px;"><%= w.date %></td>
+                            </tr>
+                        <% }) %>
+                    </table>
+                <% } %>
+            </div>
+
+            <div class="card" style="flex:1; min-width: 300px; border-color: #F1C40F;">
+                <h3 style="color: #F1C40F;">🚓 مركباتي المصروفة</h3>
+                <% if(myVehicles.length === 0) { %>
+                    <p style="color:var(--text-muted); text-align:center; padding: 20px;">لا يوجد مركبات في عهدتك.</p>
+                <% } else { %>
+                    <table style="background: rgba(0,0,0,0.2);">
+                        <tr class="header-row"><th>المركبة</th> <th>رقم اللوحة</th> <th>تاريخ الصرف</th></tr>
+                        <% myVehicles.forEach(v => { %>
+                            <tr>
+                                <td style="color: white; font-weight:bold;"><%= v.vehicleType %></td>
+                                <td style="color: var(--text-muted);"><%= v.plateNumber %></td>
+                                <td style="color: var(--warning); font-size:12px;"><%= v.date %></td>
+                            </tr>
+                        <% }) %>
+                    </table>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

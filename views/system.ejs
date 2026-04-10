@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة نظام الشرطة</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .hub-card { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 30px; border-radius: 15px; text-align: center; text-decoration: none; color: white; transition: 0.3s; display: block; }
+        .hub-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+        .hub-icon { font-size: 40px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <div class="container fade-in">
+        <h1 style="text-align:center; color:var(--danger); margin-bottom: 30px;">⚙️ اللوحة المركزية لإدارة الشرطة</h1>
+
+        <div style="display:flex; justify-content:center; gap:20px; margin-bottom: 40px; flex-wrap: wrap;">
+            <div class="card" style="border-bottom: 5px solid #e74c3c; width: 200px; text-align: center;"><h3 style="color:var(--text-muted);">الضباط</h3><h1 style="color:#e74c3c;"><%= counts.officers %></h1></div>
+            <div class="card" style="border-bottom: 5px solid #f1c40f; width: 200px; text-align: center;"><h3 style="color:var(--text-muted);">ضباط الصف</h3><h1 style="color:#f1c40f;"><%= counts.ncos %></h1></div>
+            <div class="card" style="border-bottom: 5px solid #2ecc71; width: 200px; text-align: center;"><h3 style="color:var(--text-muted);">الأفراد</h3><h1 style="color:#2ecc71;"><%= counts.enlisted %></h1></div>
+        </div>
+
+        <div class="card" style="border-color: var(--warning); text-align: center; margin-bottom: 40px; background: rgba(245, 158, 11, 0.1);">
+            <h3 style="color: var(--warning);">⚙️ بوابة التجنيد العامة</h3>
+            <p>التقديم حالياً: <% if (appsOpen) { %><strong style="color: var(--success);">مفتوح</strong><% } else { %><strong style="color: var(--danger);">مغلق</strong><% } %></p>
+            <div style="display:flex; justify-content:center; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+                <form action="/admin/toggle-apps" method="POST"><% if (appsOpen) { %><button type="submit" class="btn-danger">إغلاق التقديم للشرطة</button><% } else { %><button type="submit" class="btn-success">فتح التقديم للشرطة</button><% } %></form>
+                <form action="/system/reset-rejected" method="POST" onsubmit="return confirm('متأكد من تصفير المرفوضين لدورة جديدة؟');"><button type="submit" class="btn-secondary">تصفير المرفوضين (دورة جديدة)</button></form>
+            </div>
+        </div>
+
+        <div class="card" style="border-color: #3498DB; margin-bottom: 40px;">
+            <h3 style="color: #3498DB; margin-bottom: 20px;">📦 إعدادات العهدة (تعريف الأسلحة والمركبات للقطاع)</h3>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                    <form action="/system/weapon-types/add" method="POST" style="display:flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" name="weaponName" required placeholder="إضافة نوع سلاح (Pistol...)" style="margin:0;"><button class="btn-success">إضافة</button>
+                    </form>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <% if(custody.weaponTypes) { custody.weaponTypes.forEach(type => { %> <span style="background: rgba(52, 152, 219, 0.2); border: 1px solid #3498DB; padding: 5px 10px; border-radius: 5px; font-size:12px;"><%= type %></span> <% }) } %>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                    <form action="/system/vehicle-types/add" method="POST" style="display:flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" name="vehicleName" required placeholder="إضافة نوع مركبة (Taurus...)" style="margin:0;"><button class="btn-warning" style="color:black; font-weight:bold;">إضافة</button>
+                    </form>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <% if(custody.vehicleTypes) { custody.vehicleTypes.forEach(type => { %> <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid #F1C40F; padding: 5px 10px; border-radius: 5px; font-size:12px;"><%= type %></span> <% }) } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="color: white; text-align: center;">إدارة أقسام النظام</h2>
+        <div class="hub-grid">
+            <a href="/system/questions" class="hub-card"><div class="hub-icon">📝</div><h3>صياغة أسئلة التقديم</h3></a>
+            <a href="/system/personnel" class="hub-card"><div class="hub-icon">🎖️</div><h3>إدارة العسكر والعهدة</h3></a>
+            <a href="/system/certificates" class="hub-card"><div class="hub-icon">📜</div><h3>إدارة الشهادات والرخص</h3></a>
+            <a href="/system/archive" class="hub-card"><div class="hub-icon">📂</div><h3>السجل الشامل للقطاع</h3></a>
+        </div>
+    </div>
+</body>
+</html>

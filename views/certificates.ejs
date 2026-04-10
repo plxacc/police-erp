@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>الشهادات والرخص</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <div class="container fade-in">
+        <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">📜 بوابة الشهادات والرخص العسكرية</h1>
+
+        <div class="card" style="border-color: var(--success); margin-bottom: 40px;">
+            <h2 style="color: var(--success); margin-bottom: 15px;">🎖️ الشهادات الحاصل عليها</h2>
+            <% if(myCerts.length === 0) { %>
+                <p style="color: gray;">لم تحصل على أي شهادات أو رخص بعد.</p>
+            <% } else { %>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <% myCerts.forEach(certId => { %>
+                        <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 10px 20px; border-radius: 8px; color: white; font-weight:bold;">
+                            ✅ <%= certTypes[certId]?.name || certId %>
+                        </span>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+
+        <h2 style="color: white; text-align: center; margin-bottom: 20px;">📋 الشهادات المتاحة لتقديمك (بناءً على رتبتك)</h2>
+        
+        <% if(Object.keys(availableCerts).length === 0) { %>
+            <p style="color:var(--text-muted); text-align:center;">لا توجد شهادات متاحة لرتبتك الحالية.</p>
+        <% } %>
+
+        <% Object.entries(availableCerts).forEach(([certId, cert]) => { 
+            const certSettings = settings[certId] || { open: false, questions: [] };
+            const myApp = apps[certId];
+            const hasCert = myCerts.includes(certId);
+        %>
+            <div class="card" style="border-color: #3498DB; margin-bottom: 20px;">
+                <h3 style="color: #3498DB; margin-bottom: 10px;"><%= cert.name %></h3>
+                <p style="color: gray; font-size:14px; margin-bottom: 15px;">تتطلب رتبة: <%= cert.minRank %> فما فوق</p>
+
+                <% if (hasCert) { %>
+                    <strong style="color: var(--success);">أنت حاصل على هذه الشهادة.</strong>
+                <% } else if (myApp && myApp.status === 'pending') { %>
+                    <strong style="color: var(--warning);">⏳ طلبك قيد المراجعة...</strong>
+                <% } else if (myApp && myApp.status === 'rejected') { %>
+                    <strong style="color: var(--danger);">❌ تم رفض طلبك الأخير.</strong>
+                <% } else if (!certSettings.open) { %>
+                    <strong style="color: var(--danger);">التقديم مغلق حالياً من قبل القيادة.</strong>
+                <% } else { %>
+                    <% if (certSettings.questions && certSettings.questions.length > 0) { %>
+                        <button class="btn-primary" onclick="document.getElementById('form_div_<%= certId %>').style.display='block'; this.style.display='none'">بدء التقديم 📝</button>
+                        
+                        <div id="form_div_<%= certId %>" style="display:none; margin-top:20px; background:rgba(0,0,0,0.3); padding:20px; border-radius:10px;">
+                            <form action="/certificates/apply" method="POST" onsubmit="
+                                let obj = {}; 
+                                this.querySelectorAll('.q-input').forEach((input, i) => obj['q_'+i] = input.value); 
+                                this.querySelector('.ans-hidden').value = JSON.stringify(obj);
+                            ">
+                                <input type="hidden" name="certId" value="<%= certId %>">
+                                <input type="hidden" name="answers" class="ans-hidden">
+                                
+                                <% certSettings.questions.forEach((q, index) => { %>
+                                    <label style="color: var(--text-muted); display: block; margin-bottom: 5px;"><%= index + 1 %>. <%= q.label %></label>
+                                    <textarea class="q-input" required rows="2" placeholder="أدخل إجابتك هنا..." style="margin-bottom: 15px;"></textarea>
+                                <% }) %>
+                                <button type="submit" class="btn-success" style="width:100%;">إرسال الطلب</button>
+                            </form>
+                        </div>
+                    <% } else { %>
+                        <p style="color: var(--warning);">لا توجد أسئلة لهذه الشهادة بعد.</p>
+                    <% } %>
+                <% } %>
+            </div>
+        <% }) %>
+    </div>
+</body>
+</html>
