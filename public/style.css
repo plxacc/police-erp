@@ -28,18 +28,18 @@
 
 /* استبدل رابط الصورة برابط صورتك الحقيقية بين الأقواس */
 body {
-    background-color: var(--bg-main);
+    margin: 0;
+    padding: 0;
+    /* تعيين الصورة كخلفية ثابتة */
     background-image: 
-        /* طبقة التدرجات والإضاءة (لا تمسحها) */
-        radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.2), transparent 40%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 40%),
-        /* طبقة الصورة - ضع الرابط هنا */
-        url('https://example.com/your-background-image.jpg'); 
+        /* طبقة تظليل سوداء خفيفة فوق الصورة لجعل الكلام واضحاً */
+        linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+        url('/bg.jpg'); /* تأكد أن اسم الصورة في مجلد public هو bg.jpg */
     
-    background-size: 100% 100%, 100% 100%, cover;
-    background-position: center, center, center;
-    background-attachment: fixed;
-    background-blend-mode: overlay; /* يدمج الصورة مع الألوان */
+    background-size: cover; /* تجعل الصورة تغطي الشاشة بالكامل */
+    background-position: center; /* تمركز الصورة */
+    background-attachment: fixed; /* تجعل الخلفية ثابتة أثناء التمرير */
+    background-repeat: no-repeat;
     
     color: var(--text-main);
     font-family: 'Cairo', sans-serif;
@@ -47,7 +47,6 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
 }
-
 /* --- تنسيق الشعار المصغر (أضفه في نهاية ملف style.css) --- */
 .home-logo-link {
     position: fixed; /* Fixed عشان يظل ثابت حتى لو نزلت بالصفحة */
