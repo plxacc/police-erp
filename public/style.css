@@ -26,21 +26,48 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* استبدل رابط الصورة برابط صورتك الحقيقية بين الأقواس */
 body {
     background-color: var(--bg-main);
-    /* خلفية متطورة مع شبكة عسكرية (Grid) */
     background-image: 
-        radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.12), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%),
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+        /* طبقة التدرجات والإضاءة (لا تمسحها) */
+        radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.2), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 40%),
+        /* طبقة الصورة - ضع الرابط هنا */
+        url('https://example.com/your-background-image.jpg'); 
+    
+    background-size: 100% 100%, 100% 100%, cover;
+    background-position: center, center, center;
     background-attachment: fixed;
+    background-blend-mode: overlay; /* يدمج الصورة مع الألوان */
+    
     color: var(--text-main);
     font-family: 'Cairo', sans-serif;
     direction: rtl;
     min-height: 100vh;
     overflow-x: hidden;
+}
+
+/* --- تنسيق الشعار المصغر (أضفه في نهاية ملف style.css) --- */
+.home-logo-link {
+    position: fixed; /* Fixed عشان يظل ثابت حتى لو نزلت بالصفحة */
+    top: 20px;
+    right: 30px;
+    z-index: 9999; /* عشان يكون فوق كل شيء */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-logo-link:hover {
+    transform: scale(1.1);
+}
+
+.home-logo {
+    width: 60px; /* حجم الشعار */
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%; /* يخليه دائري */
+    border: 2px solid var(--primary); /* إطار بلون أساسي */
+    box-shadow: 0 0 15px var(--primary-glow); /* إضاءة خلف الشعار */
 }
 
 /* =========================================

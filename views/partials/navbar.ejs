@@ -1,3 +1,7 @@
+<a href="/" class="home-logo-link" title="العودة للرئيسية">
+    <img src="/logo.png" alt="شعار القطاع" class="home-logo" onerror="this.src='https://via.placeholder.com/60x60/0ea5e9/ffffff?text=Logo'">
+</a>
+
 <div class="navbar">
     <h2>القيادة العامة للشرطة</h2>
     <div class="nav-links">
@@ -21,11 +25,13 @@
         <% } %>
     </div>
 </div>
+
 <div class="toast-container" id="toast-container">
     <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
         <% notifications.forEach(notif => { %><div class="toast <%= notif.type %>"><%= notif.message %></div><% }) %>
     <% } %>
 </div>
+
 <script>
     function showCustomToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
