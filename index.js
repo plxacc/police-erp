@@ -5,15 +5,6 @@ const session = require('express-session');
 const db = require('./database/db'); 
 const { Client, GatewayIntentBits, EmbedBuilder, Events } = require('discord.js');
 
-const PERMISSIONS_LIST = {
-    "manage_questions": "تعديل أسئلة التقديم",
-    "manage_certs": "فتح/إغلاق الدورات وتعديل أسئلتها",
-    "initial_action": "القبول/الرفض المبدئي",
-    "final_action": "التجنيد النهائي/الرفض النهائي",
-    "grant_certs": "قبول/رفض طلبات الشهادات",
-    "manage_custody": "صرف واسترجاع العهدة"
-};
-
 const app = express();
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -59,35 +50,63 @@ const DEFAULT_CERTS = {
     apps: {}
 };
 
-async function safeArchivePush(userId, logData) {
+const PERMISSIONS_LIST = {
+    "OPEN_CLOSE_COURSES": "فتح وإغلاق الدورات",
+    "MANAGE_COURSE_QUESTIONS": "تعديل أسئلة الدورات",
+    "MANAGE_APP_QUESTIONS": "تعديل أسئلة التقديم",
+    "PRE_ACCEPTANCE": "القبول المبدئي",
+    "FINAL_ACCEPTANCE": "القبول النهائي / التجنيد",
+    "REJECTION_POWER": "صلاحية الرفض (مبدئي/نهائي)",
+    "GIVE_CERTS": "منح الشهادات",
+    "MANAGE_ARMORY": "صرف واسترجاع العهدة"
+};
+
+// دالة السجل الشامل (Global Audit Log) الجديدة
+async function globalLog(userId, logData) {
     const archiveDB = await db.get('archive', {});
     if (!archiveDB[userId]) archiveDB[userId] = [];
-    else if (!Array.isArray(archiveDB[userId])) archiveDB[userId] = [archiveDB[userId]];
     
     logData.timestamp = Date.now(); 
+    logData.formattedDate = new Date().toLocaleString('ar-SA');
     archiveDB[userId].push(logData);
     await db.save('archive', archiveDB);
+
+    const ledger = await db.get('global_ledger', []);
+    ledger.unshift({ ...logData, userId });
+    if (ledger.length > 1000) ledger.pop(); // نحفظ آخر 1000 حدث عشان ما يثقل القاعدة
+    await db.save('global_ledger', ledger);
     
     try {
         const channel = client.channels.cache.get(process.env.LOG_CHANNEL_ID);
         if (channel) {
-            let color = 0x808080; let title = "📄 سجل القطاع العسكري";
-            if (logData.type === 'enlist') { color = 0x2ECC71; title = "🎖️ تجنيد جديد"; }
-            else if (logData.type === 'fail_training' || logData.type === 'reject') { color = 0xE74C3C; title = "❌ رفض / عدم اجتياز"; }
-            else if (logData.type === 'fire') { color = 0x992D22; title = "⚠️ فصل وطي قيد"; }
-            else if (logData.type === 'promotion') { color = 0xF1C40F; title = "📈 ترقية / تعديل رتبة"; }
-            else if (logData.type === 'cert_granted') { color = 0x9B59B6; title = "📜 منح شهادة عسكرية"; }
-            else if (logData.type === 'cert_revoked') { color = 0xE74C3C; title = "❌ سحب شهادة عسكرية"; }
+            let color = 0x808080; let title = "📄 سجل العمليات";
+            if (logData.type === 'enlist' || logData.type === 'pre_accept') { color = 0x2ECC71; title = "✅ " + logData.title; }
+            else if (logData.type === 'fail_training' || logData.type === 'reject' || logData.type === 'cert_revoked') { color = 0xE74C3C; title = "❌ " + logData.title; }
+            else if (logData.type === 'fire') { color = 0x992D22; title = "⚠️ " + logData.title; }
+            else if (logData.type === 'promotion') { color = 0xF1C40F; title = "📈 " + logData.title; }
+            else if (logData.type === 'cert_granted') { color = 0x9B59B6; title = "📜 " + logData.title; }
+            else if (logData.type === 'armory_issue') { color = 0x3498DB; title = "🔫 " + logData.title; }
             
             const embed = new EmbedBuilder().setTitle(title).setColor(color)
                 .addFields(
                     { name: "العسكري / المتقدم", value: `${logData.username} (<@${userId}>)`, inline: true }, 
                     { name: "المسؤول", value: logData.actionBy, inline: true }, 
                     { name: "التفاصيل", value: logData.details, inline: false }
-                ).setTimestamp();
+                )
+                .setFooter({ text: `الرقم الوطني: ${logData.nationalId || 'غير مسجل'}` })
+                .setTimestamp();
             channel.send({ embeds: [embed] }).catch(()=>{});
         }
     } catch (err) {}
+}
+
+async function hasPermission(user, permKey) {
+    if (!user) return false;
+    if (user.perms.isOfficer) return true;
+    const personnelDB = await db.get('personnel', {});
+    const userData = personnelDB[user.id];
+    if (userData && userData.delegatedPerms && userData.delegatedPerms.includes(permKey)) return true;
+    return false;
 }
 
 app.use(async (req, res, next) => {
@@ -114,10 +133,11 @@ app.use(async (req, res, next) => {
             if (req.session.user.perms.isPolice) {
                 const personnelDB = await db.get('personnel', {});
                 if (!personnelDB[req.session.user.id]) { 
-                    personnelDB[req.session.user.id] = { rank: "مستجد", certs: [] }; 
+                    personnelDB[req.session.user.id] = { rank: "مستجد", certs: [], delegatedPerms: [], nationalId: "غير مسجل", realName: req.session.user.username }; 
                     await db.save('personnel', personnelDB); 
                 }
                 req.session.user.customRank = personnelDB[req.session.user.id].rank;
+                req.session.user.delegatedPerms = personnelDB[req.session.user.id].delegatedPerms || [];
             }
         } catch(e) {}
     } else { res.locals.notifications = []; }
@@ -168,9 +188,11 @@ app.post('/submit', async (req, res) => {
     const appsDB = await db.get('apps', {}); 
     if (appsDB[req.session.user.id]) return res.send('لقد قدمت مسبقاً!'); 
     
-    appsDB[req.session.user.id] = { status: 'applied', date: new Date().toLocaleString('ar-SA'), username: req.session.user.username, answers: req.body }; 
+    appsDB[req.session.user.id] = { status: 'applied', date: new Date().toLocaleString('ar-SA'), username: req.session.user.username, answers: req.body, realName: req.body.realName || req.session.user.username, nationalId: req.body.nationalId || "000000" }; 
     await db.save('apps', appsDB); 
     
+    await globalLog(req.session.user.id, { type: 'app_submit', title: 'تقديم جديد', username: req.session.user.username, nationalId: req.body.nationalId || "000000", actionBy: 'النظام', details: `تم استلام طلب انضمام جديد` });
+
     const guild = client.guilds.cache.get(process.env.GUILD_ID); 
     const member = guild.members.cache.get(req.session.user.id); 
     if(member) await member.roles.add(process.env.APPLIED_ROLE_ID).catch(()=>{}); 
@@ -181,32 +203,40 @@ app.get('/admin', async (req, res) => {
     if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/'); 
     const appsDB = await db.get('apps', {});
     const questions = await db.get('questions', []);
-    res.render('admin', { user: req.session.user, db: appsDB, questions: questions }); 
+    const canPreAccept = await hasPermission(req.session.user, 'PRE_ACCEPTANCE');
+    const canFinalAccept = await hasPermission(req.session.user, 'FINAL_ACCEPTANCE');
+    const canReject = await hasPermission(req.session.user, 'REJECTION_POWER');
+    res.render('admin', { user: req.session.user, db: appsDB, questions: questions, perms: { canPreAccept, canFinalAccept, canReject } }); 
 });
 
 app.post('/admin/action', async (req, res) => {
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/');
     const { userId, action, reason } = req.body; 
     const appsDB = await db.get('apps', {}); 
-    
+    const targetData = appsDB[userId];
+    if(!targetData) return res.redirect('/admin');
+
     const guild = client.guilds.cache.get(process.env.GUILD_ID); 
     const target = guild.members.cache.get(userId);
     
     if (action === 'accept') { 
+        if (!await hasPermission(req.session.user, 'PRE_ACCEPTANCE')) return res.redirect('/admin');
         if (target) { await target.roles.add(process.env.INITIAL_ACCEPT_ROLE_ID).catch(()=>{}); await target.roles.remove(process.env.APPLIED_ROLE_ID).catch(()=>{}); } 
         appsDB[userId].status = 'accepted'; appsDB[userId].actionBy = req.session.user.username; 
+        await globalLog(userId, { type: 'pre_accept', title: 'قبول مبدئي', username: targetData.username, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: 'تم قبوله مبدئياً' });
         await db.addNotification(userId, '✅ تم قبولك مبدئياً.', 'success'); 
     } 
     else if (action === 'reject') { 
+        if (!await hasPermission(req.session.user, 'REJECTION_POWER')) return res.redirect('/admin');
         if (target) { await target.roles.remove(process.env.APPLIED_ROLE_ID).catch(()=>{}); await target.roles.remove(process.env.INITIAL_ACCEPT_ROLE_ID).catch(()=>{}); } 
         appsDB[userId].status = 'rejected'; 
-        await safeArchivePush(userId, { username: appsDB[userId].username, type: 'reject', details: `رفض مبدئي. السبب: ${reason}`, answers: appsDB[userId].answers, actionBy: req.session.user.username }); 
+        await globalLog(userId, { type: 'reject', title: 'رفض طلب', username: targetData.username, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: `السبب: ${reason}`, answers: targetData.answers }); 
         await db.addNotification(userId, '❌ تم رفض طلبك.', 'danger'); 
     } 
     else if (action === 'fail_training') { 
+        if (!await hasPermission(req.session.user, 'REJECTION_POWER')) return res.redirect('/admin');
         if (target) { await target.roles.remove(process.env.INITIAL_ACCEPT_ROLE_ID).catch(()=>{}); } 
         appsDB[userId].status = 'rejected'; 
-        await safeArchivePush(userId, { username: appsDB[userId].username, type: 'fail_training', details: `عدم اجتياز. السبب: ${reason}`, answers: appsDB[userId].answers, actionBy: req.session.user.username }); 
+        await globalLog(userId, { type: 'fail_training', title: 'رسوب في الدورة', username: targetData.username, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: `السبب: ${reason}`, answers: targetData.answers }); 
         await db.addNotification(userId, '❌ لم تجتز الدورة.', 'danger'); 
     }
     await db.save('apps', appsDB); 
@@ -214,19 +244,21 @@ app.post('/admin/action', async (req, res) => {
 });
 
 app.post('/admin/enlist', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+    if (!await hasPermission(req.session.user, 'FINAL_ACCEPTANCE')) return res.redirect('/admin');
     const { userId } = req.body; 
     const appsDB = await db.get('apps', {}); 
     const personnelDB = await db.get('personnel', {}); 
+    const targetData = appsDB[userId];
+    if(!targetData) return res.redirect('/admin');
     
     const guild = client.guilds.cache.get(process.env.GUILD_ID); 
     const target = guild.members.cache.get(userId);
     if (target) { await target.roles.add(process.env.ENLISTED_ROLE_ID).catch(()=>{}); await target.roles.remove([process.env.INITIAL_ACCEPT_ROLE_ID, process.env.APPLIED_ROLE_ID]).catch(()=>{}); }
     
-    personnelDB[userId] = { rank: "مستجد", certs: [] }; 
+    personnelDB[userId] = { rank: "مستجد", certs: [], delegatedPerms: [], nationalId: targetData.nationalId, realName: targetData.realName }; 
     await db.save('personnel', personnelDB);
     
-    await safeArchivePush(userId, { username: appsDB[userId].username, type: 'enlist', details: 'تجنيد نهائي (مستجد)', answers: appsDB[userId].answers, actionBy: req.session.user.username }); 
+    await globalLog(userId, { type: 'enlist', title: 'تجنيد نهائي', username: targetData.username, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: 'تم تجنيده برتبة مستجد', answers: targetData.answers }); 
     delete appsDB[userId]; 
     await db.save('apps', appsDB); 
     await db.addNotification(userId, '🎖️ تم تجنيدك برتبة مستجد.', 'success'); 
@@ -279,13 +311,15 @@ app.post('/certificates/apply', async (req, res) => {
 });
 
 app.get('/system/certificates', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!req.session.user || !(req.session.user.perms.isOfficer || await hasPermission(req.session.user, 'GIVE_CERTS'))) return res.redirect('/'); 
     const certsDB = await db.get('certs', DEFAULT_CERTS);
-    res.render('cert_admin', { user: req.session.user, certTypes: CERT_TYPES, certsDB: certsDB }); 
+    const canManageCourses = await hasPermission(req.session.user, 'OPEN_CLOSE_COURSES');
+    const canManageQuestions = await hasPermission(req.session.user, 'MANAGE_COURSE_QUESTIONS');
+    res.render('cert_admin', { user: req.session.user, certTypes: CERT_TYPES, certsDB: certsDB, perms: { canManageCourses, canManageQuestions } }); 
 });
 
 app.post('/system/certificates/toggle', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'OPEN_CLOSE_COURSES')) return res.redirect('/system/certificates'); 
     const certsDB = await db.get('certs', DEFAULT_CERTS); 
     certsDB.settings[req.body.certId].open = !certsDB.settings[req.body.certId].open; 
     await db.save('certs', certsDB); 
@@ -293,7 +327,7 @@ app.post('/system/certificates/toggle', async (req, res) => {
 });
 
 app.post('/system/certificates/questions/add', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_COURSE_QUESTIONS')) return res.redirect('/system/certificates'); 
     const certsDB = await db.get('certs', DEFAULT_CERTS); 
     if(!certsDB.settings[req.body.certId].questions) certsDB.settings[req.body.certId].questions = [];
     certsDB.settings[req.body.certId].questions.push({ label: req.body.questionLabel }); 
@@ -302,7 +336,7 @@ app.post('/system/certificates/questions/add', async (req, res) => {
 });
 
 app.post('/system/certificates/questions/delete', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_COURSE_QUESTIONS')) return res.redirect('/system/certificates'); 
     const certsDB = await db.get('certs', DEFAULT_CERTS); 
     certsDB.settings[req.body.certId].questions.splice(req.body.index, 1); 
     await db.save('certs', certsDB); 
@@ -310,17 +344,18 @@ app.post('/system/certificates/questions/delete', async (req, res) => {
 });
 
 app.post('/system/certificates/action', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+    if (!await hasPermission(req.session.user, 'GIVE_CERTS')) return res.redirect('/system/certificates');
     const { userId, certId, action } = req.body; 
     const certsDB = await db.get('certs', DEFAULT_CERTS); 
     const personnelDB = await db.get('personnel', {}); 
+    const targetData = personnelDB[userId] || {};
     
     if (action === 'accept') {
         if (!personnelDB[userId].certs) personnelDB[userId].certs = [];
         if (!personnelDB[userId].certs.includes(certId)) personnelDB[userId].certs.push(certId);
         await db.save('personnel', personnelDB);
         
-        await safeArchivePush(userId, { username: certsDB.apps[userId][certId].username, type: 'cert_granted', details: `منح ${CERT_TYPES[certId].name}`, actionBy: req.session.user.username }); 
+        await globalLog(userId, { type: 'cert_granted', title: 'منح شهادة', username: certsDB.apps[userId][certId].username, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: `حصل على ${CERT_TYPES[certId].name}` }); 
         await db.addNotification(userId, `🎖️ مبروك! تم منحك ${CERT_TYPES[certId].name}.`, 'success'); 
         delete certsDB.apps[userId][certId];
     } else if (action === 'reject') { 
@@ -373,13 +408,13 @@ app.post('/system/vehicle-types/add', async (req, res) => {
 });
 
 app.get('/system/questions', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_APP_QUESTIONS')) return res.redirect('/'); 
     const questions = await db.get('questions', []);
     res.render('questions', { user: req.session.user, questions: questions }); 
 });
 
 app.post('/system/questions/add', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_APP_QUESTIONS')) return res.redirect('/'); 
     const questions = await db.get('questions', []); 
     questions.push({ label: req.body.questionLabel }); 
     await db.save('questions', questions); 
@@ -387,7 +422,7 @@ app.post('/system/questions/add', async (req, res) => {
 });
 
 app.post('/system/questions/edit', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_APP_QUESTIONS')) return res.redirect('/'); 
     const questions = await db.get('questions', []); 
     if (questions[req.body.index]) questions[req.body.index].label = req.body.newLabel; 
     await db.save('questions', questions); 
@@ -395,7 +430,7 @@ app.post('/system/questions/edit', async (req, res) => {
 });
 
 app.post('/system/questions/delete', async (req, res) => { 
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_APP_QUESTIONS')) return res.redirect('/'); 
     const questions = await db.get('questions', []); 
     questions.splice(req.body.index, 1); 
     await db.save('questions', questions); 
@@ -415,25 +450,26 @@ app.get('/system/personnel', async (req, res) => {
         let dRank = "أفراد"; 
         if(m.roles.cache.has(process.env.OFFICERS_ROLE_ID)) dRank = "ضباط"; 
         else if(m.roles.cache.has(process.env.NCO_ROLE_ID)) dRank = "ضباط صف"; 
-        return { id: m.id, username: m.user.username, discordRank: dRank, siteRank: personnelDB[m.id] ? personnelDB[m.id].rank : "مستجد", certs: personnelDB[m.id] ? (personnelDB[m.id].certs || []) : [] }; 
+        const dbData = personnelDB[m.id] || { rank: "مستجد", certs: [], delegatedPerms: [], nationalId: "غير مسجل", realName: m.user.username };
+        return { id: m.id, username: m.user.username, discordRank: dRank, siteRank: dbData.rank, certs: dbData.certs || [], delegatedPerms: dbData.delegatedPerms || [], nationalId: dbData.nationalId, realName: dbData.realName }; 
     });
     
-    res.render('personnel', { user: req.session.user, list, RANKS_LADDER, custody, certTypes: CERT_TYPES });
+    res.render('personnel', { user: req.session.user, list, RANKS_LADDER, custody, certTypes: CERT_TYPES, PERMISSIONS_LIST });
 });
 
 app.post('/system/personnel/action', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const { targetId, action, newDiscordRole, newSiteRank, reason } = req.body; 
+    const { targetId, action, newDiscordRole, newSiteRank, newRealName, newNationalId, delegatedPerms, reason } = req.body; 
     const personnelDB = await db.get('personnel', {}); 
     
     const guild = client.guilds.cache.get(process.env.GUILD_ID); 
     const target = guild.members.cache.get(targetId); 
-    const targetName = target ? target.user.username : "عسكري";
+    const targetData = personnelDB[targetId] || { rank: "مستجد", nationalId: "غير مسجل", realName: target ? target.user.username : "عسكري" };
     
     if (action === 'fire') { 
         if (target) await target.roles.remove([process.env.ENLISTED_ROLE_ID, process.env.NCO_ROLE_ID, process.env.OFFICERS_ROLE_ID]).catch(()=>{}); 
         delete personnelDB[targetId]; 
-        await safeArchivePush(targetId, { username: targetName, type: 'fire', details: `فصل من الخدمة. السبب: ${reason}`, actionBy: req.session.user.username }); 
+        await globalLog(targetId, { type: 'fire', title: 'فصل وطي قيد', username: targetData.realName, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: `السبب: ${reason}` }); 
         await db.addNotification(targetId, `⚠️ تم فصلك.`, 'danger'); 
     } 
     else if (action === 'update_discord') { 
@@ -443,50 +479,52 @@ app.post('/system/personnel/action', async (req, res) => {
             if (newDiscordRole === 'nco') await target.roles.add(process.env.NCO_ROLE_ID).catch(()=>{}); 
             else if (newDiscordRole === 'officer') await target.roles.add(process.env.OFFICERS_ROLE_ID).catch(()=>{}); 
             
-            await safeArchivePush(targetId, { username: targetName, type: 'discord', details: `تحديث الفئة إلى: ${newDiscordRole}`, actionBy: req.session.user.username }); 
-            await db.addNotification(targetId, '🔄 تم تحديث ديسكورد.', 'info'); 
+            await globalLog(targetId, { type: 'promotion', title: 'تحديث فئة ديسكورد', username: targetData.realName, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: `تحديث الفئة إلى: ${newDiscordRole}` }); 
+            await db.addNotification(targetId, '🔄 تم تحديث فئة الديسكورد.', 'info'); 
         } 
     }
-    else if (action === 'update_site') {
-    const oldRank = personnelDB[targetId] ? personnelDB[targetId].rank : "مستجد";
-    
-    // التحقق إذا كانت الرتبة هي نفسها
-    if (newSiteRank === oldRank) {
-        await db.addNotification(req.session.user.id, `⚠️ العسكري ${targetName} يشغل بالفعل رتبة ${newSiteRank}`, 'info');
-        return res.redirect('/system/personnel');
-    }
+    else if (action === 'update_site') { 
+        if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs:[], delegatedPerms: [], nationalId: newNationalId, realName: newRealName }; 
+        const oldRank = personnelDB[targetId].rank;
+        
+        // التحقق من أن هناك تغيير في البيانات قبل الحفظ
+        if(oldRank === newSiteRank && personnelDB[targetId].nationalId === newNationalId && personnelDB[targetId].realName === newRealName) {
+            // إضافة الصلاحيات فقط إذا تغيرت
+            personnelDB[targetId].delegatedPerms = Array.isArray(delegatedPerms) ? delegatedPerms : (delegatedPerms ? [delegatedPerms] : []);
+            await db.save('personnel', personnelDB);
+            return res.redirect('/system/personnel'); // خروج بدون إرسال لوق ترقية وهمي
+        }
 
-    if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs:[] };
-    personnelDB[targetId].rank = newSiteRank;
-    
-    await safeArchivePush(targetId, { 
-        username: targetName, 
-        type: 'promotion', 
-        details: `ترقية/تعديل رتبة: من ${oldRank} إلى ${newSiteRank}`, 
-        actionBy: req.session.user.username 
-    });
-    await db.addNotification(targetId, `🎖️ تم تحديث رتبتك إلى: ${newSiteRank}`, 'success');
+        personnelDB[targetId].rank = newSiteRank; 
+        personnelDB[targetId].realName = newRealName || personnelDB[targetId].realName;
+        personnelDB[targetId].nationalId = newNationalId || personnelDB[targetId].nationalId;
+        personnelDB[targetId].delegatedPerms = Array.isArray(delegatedPerms) ? delegatedPerms : (delegatedPerms ? [delegatedPerms] : []);
+        
+        await globalLog(targetId, { type: 'promotion', title: 'تحديث بيانات ورتبة', username: personnelDB[targetId].realName, nationalId: personnelDB[targetId].nationalId, actionBy: req.session.user.username, details: `تعديل الرتبة من ${oldRank} إلى ${newSiteRank}` }); 
+        await db.addNotification(targetId, `🎖️ تم تحديث بياناتك ورتبتك إلى: ${newSiteRank}`, 'success'); 
     }
     await db.save('personnel', personnelDB); 
-    res.redirect('/system/personnel');      
-});
-
-app.post('/system/personnel/update-info', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const { targetId, fullName, nationalId } = req.body;
-    const personnelDB = await db.get('personnel', {});
-    
-    if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs: [] };
-    
-    personnelDB[targetId].fullName = fullName;
-    personnelDB[targetId].nationalId = nationalId;
-    
-    await db.save('personnel', personnelDB);
-    await db.addNotification(req.session.user.id, '✅ تم تحديث بيانات العسكري بنجاح.', 'success');
     res.redirect('/system/personnel');
 });
+
+app.post('/system/personnel/revoke-cert', async (req, res) => {
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+    const { targetId, certId } = req.body; 
+    const personnelDB = await db.get('personnel', {}); 
+    const targetData = personnelDB[targetId];
+    
+    if (targetData && targetData.certs) { 
+        targetData.certs = targetData.certs.filter(id => id !== certId); 
+        await db.save('personnel', personnelDB); 
+        
+        await globalLog(targetId, { type: 'cert_revoked', title: 'سحب شهادة', username: targetData.realName, nationalId: targetData.nationalId, actionBy: req.session.user.username, details: `تم سحب شهادة: ${CERT_TYPES[certId] ? CERT_TYPES[certId].name : certId}` }); 
+        await db.addNotification(targetId, `⚠️ تم سحب شهادة (${CERT_TYPES[certId] ? CERT_TYPES[certId].name : certId}) منك بقرار إداري.`, 'danger'); 
+    }
+    res.redirect('/system/personnel');
+});
+
 app.post('/custody/weapons/issue', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/system/personnel'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_ARMORY')) return res.redirect('/system/personnel'); 
     const custodyDB = await db.get('custody', { weaponLogs: [], vehicleLogs: [] }); 
     if(!custodyDB.weaponLogs) custodyDB.weaponLogs = [];
     const log = { receiverDiscordId: req.body.discordId, receiverName: req.body.receiverName, nationalId: req.body.nationalId, weaponType: req.body.weaponType, serialNumber: req.body.serialNumber, issuerName: req.session.user.username, date: new Date().toLocaleString('ar-SA') }; 
@@ -494,18 +532,12 @@ app.post('/custody/weapons/issue', async (req, res) => {
     await db.save('custody', custodyDB); 
     await db.addNotification(req.session.user.id, '🔫 تم تسليم السلاح.', 'success'); 
     
-    try { 
-        const channel = client.channels.cache.get(process.env.LOG_CHANNEL_ID); 
-        if (channel) { 
-            const embed = new EmbedBuilder().setTitle("🔫 تسليم عهدة سلاح").setColor(0x3498DB).addFields({ name: "المستلم", value: `${log.receiverName} (${log.nationalId})`, inline: true }, { name: "الضابط", value: log.issuerName, inline: true }, { name: "التفاصيل", value: `نوع السلاح: ${log.weaponType}\nالسيريال: ${log.serialNumber}`, inline: false }).setTimestamp(); 
-            channel.send({ embeds: [embed] }).catch(()=>{}); 
-        } 
-    } catch(e) {} 
+    await globalLog(req.body.discordId, { type: 'armory_issue', title: 'صرف عهدة (سلاح)', username: req.body.receiverName, nationalId: req.body.nationalId, actionBy: req.session.user.username, details: `سلاح: ${req.body.weaponType} | S/N: ${req.body.serialNumber}` });
     res.redirect('/system/personnel'); 
 });
 
 app.post('/custody/vehicles/issue', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/system/personnel'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_ARMORY')) return res.redirect('/system/personnel'); 
     const custodyDB = await db.get('custody', { weaponLogs: [], vehicleLogs: [] }); 
     if(!custodyDB.vehicleLogs) custodyDB.vehicleLogs = [];
     const log = { receiverDiscordId: req.body.discordId, receiverName: req.body.receiverName, nationalId: req.body.nationalId, vehicleType: req.body.vehicleType, plateNumber: req.body.plateNumber, issuerName: req.session.user.username, date: new Date().toLocaleString('ar-SA') }; 
@@ -513,24 +545,25 @@ app.post('/custody/vehicles/issue', async (req, res) => {
     await db.save('custody', custodyDB); 
     await db.addNotification(req.session.user.id, '🚓 تم تسليم المركبة.', 'success'); 
     
-    try { 
-        const channel = client.channels.cache.get(process.env.LOG_CHANNEL_ID); 
-        if (channel) { 
-            const embed = new EmbedBuilder().setTitle("🚓 تسليم عهدة مركبة").setColor(0xF1C40F).addFields({ name: "المستلم", value: `${log.receiverName} (${log.nationalId})`, inline: true }, { name: "الضابط", value: log.issuerName, inline: true }, { name: "التفاصيل", value: `نوع المركبة: ${log.vehicleType}\nاللوحة: ${log.plateNumber}`, inline: false }).setTimestamp(); 
-            channel.send({ embeds: [embed] }).catch(()=>{}); 
-        } 
-    } catch(e) {} 
+    await globalLog(req.body.discordId, { type: 'armory_issue', title: 'صرف عهدة (مركبة)', username: req.body.receiverName, nationalId: req.body.nationalId, actionBy: req.session.user.username, details: `مركبة: ${req.body.vehicleType} | لوحة: ${req.body.plateNumber}` });
     res.redirect('/system/personnel'); 
 });
 
 app.post('/system/custody/return', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/system/personnel'); 
+    if (!await hasPermission(req.session.user, 'MANAGE_ARMORY')) return res.redirect('/system/personnel'); 
     const custodyDB = await db.get('custody', { weaponLogs: [], vehicleLogs: [] }); 
     if (req.body.type === 'weapon' && custodyDB.weaponLogs) custodyDB.weaponLogs.splice(req.body.index, 1); 
     else if (req.body.type === 'vehicle' && custodyDB.vehicleLogs) custodyDB.vehicleLogs.splice(req.body.index, 1); 
     await db.save('custody', custodyDB); 
     await db.addNotification(req.session.user.id, '✅ تم استرجاع العهدة.', 'success'); 
     res.redirect('/system/personnel'); 
+});
+
+// مسار السجل الشامل للقطاع
+app.get('/system/ledger', async (req, res) => { 
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
+    const ledger = await db.get('global_ledger', []);
+    res.render('ledger', { user: req.session.user, ledger: ledger }); 
 });
 
 app.get('/system/archive', async (req, res) => { 
@@ -555,37 +588,6 @@ app.post('/custody/rules/update', async (req, res) => {
     await db.save('custody', custodyDB); 
     await db.addNotification(req.session.user.id, '✅ تم تحديث قوانين العهدة.', 'success'); 
     res.redirect('/armory'); 
-});
-
-// عرض صفحة الصلاحيات
-app.get('/system/permissions', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const permissionsDB = await db.get('permissions', {});
-    const personnelDB = await db.get('personnel', {});
-    const guild = client.guilds.cache.get(process.env.GUILD_ID);
-    
-    // جلب ضباط الصف فقط لإدارة صلاحياتهم
-    const ncos = guild.members.cache.filter(m => m.roles.cache.has(process.env.NCO_ROLE_ID));
-    const ncoList = ncos.map(m => ({
-        id: m.id,
-        username: m.user.username,
-        currentPermissions: permissionsDB[m.id] || []
-    }));
-
-    res.render('permissions', { user: req.session.user, ncoList, PERMISSIONS_LIST });
-});
-
-// حفظ الصلاحيات
-app.post('/system/permissions/update', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const { targetId, perms } = req.body;
-    const permissionsDB = await db.get('permissions', {});
-    
-    permissionsDB[targetId] = Array.isArray(perms) ? perms : [perms];
-    await db.save('permissions', permissionsDB);
-    
-    await db.addNotification(targetId, '🔐 تم تحديث صلاحياتك الإدارية من قبل القيادة.', 'warning');
-    res.redirect('/system/permissions');
 });
 
 app.listen(3000, () => console.log('🚀 شغال على السحابة (MongoDB) بكل قوة!'));

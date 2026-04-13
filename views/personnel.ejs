@@ -2,36 +2,38 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة العسكر والعهدة المطورة</title>
+    <title>إدارة العسكر والعهدة</title>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .profile-section { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--glass-border); }
+        .profile-section h3 { margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .cert-tag { background: rgba(155, 89, 182, 0.1); border: 1px solid #9B59B6; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 15px; }
+        .perm-checkbox { margin-left: 5px; transform: scale(1.2); }
+        .perm-label { color: white; font-size: 13px; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
     <div class="container fade-in">
-        <div class="card" style="border-color: var(--primary);">
-            <h2 style="color: var(--primary); margin-bottom: 20px;">🔍 نظام البحث والاستعلام العسكري</h2>
-            <input type="text" id="searchPersonnel" class="search-bar" 
-                   placeholder="🔍 ابحث بالاسم، الرقم العسكري (Discord ID)، أو الرقم الوطني..." 
-                   onkeyup="advancedFilter()">
+        <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
+        
+        <div class="card" style="border-color: var(--danger);">
+            <h2 style="color: var(--danger); margin-bottom: 20px;">🎖️ إدارة العسكر والصلاحيات</h2>
+            <input type="text" id="searchPersonnel" class="search-bar" placeholder="🔍 ابحث بالاسم، الآيدي، أو الرقم الوطني..." onkeyup="filterTable('searchPersonnel', 'personnelTable')">
             
-            <div class="scrollable-box" style="max-height: 600px; margin-top: 20px;">
+            <div class="scrollable-box" style="max-height: 600px;">
                 <table id="personnelTable">
-                    <tr class="header-row">
-                        <th>بيانات العسكري</th>
-                        <th>الرتبة</th>
-                        <th>الرقم الوطني</th>
-                        <th style="text-align:center;">الإجراءات</th>
-                    </tr>
+                    <tr class="header-row"><th>العسكري</th> <th>الرتبة</th> <th style="text-align:center;">الإجراءات</th></tr>
                     <% list.forEach(member => { %>
                         <tr class="searchable-row">
                             <td style="font-weight:bold; color:white;">
-                                <%= member.fullName || member.username %> 
-                                <br><span style="font-size:11px; color:var(--primary);">ID: <%= member.id %></span>
+                                <%= member.realName %> <br>
+                                <span style="font-size:11px; color:gray;">ديسكورد: <%= member.username %> | آيدي: <%= member.id %></span><br>
+                                <span style="font-size:12px; color:var(--primary);">الرقم الوطني: <%= member.nationalId %></span>
                             </td>
-                            <td style="color:var(--warning); font-weight:bold;"><%= member.siteRank %></td>
-                            <td class="nat-id" style="color:#aaa;"><%= member.nationalId || 'غير مسجل' %></td>
+                            <td style="color:var(--warning); font-weight:bold;"><%= member.siteRank %><br><span style="color:var(--primary); font-weight:normal; font-size:12px;"><%= member.discordRank %></span></td>
                             <td style="text-align:center;">
-                                <button class="btn-primary" onclick="document.getElementById('modal_profile_<%= member.id %>').style.display='block'">فتح السجل الكامل 📂</button>
+                                <button type="button" class="btn-primary" style="padding: 8px 20px;" onclick="document.getElementById('modal_profile_<%= member.id %>').style.display='block'">ملف العسكري 📂</button>
                             </td>
                         </tr>
                     <% }) %>
@@ -40,37 +42,156 @@
         </div>
     </div>
 
-    <% list.forEach(member => { %>
+    <% list.forEach(member => { 
+        const memberWeapons = (custody.weaponLogs || []).map((l, i) => ({...l, originalIndex: i})).filter(l => l.receiverDiscordId === member.id);
+        const memberVehicles = (custody.vehicleLogs || []).map((l, i) => ({...l, originalIndex: i})).filter(l => l.receiverDiscordId === member.id);
+    %>
         <div id="modal_profile_<%= member.id %>" class="modal">
-            <div class="modal-content" style="max-width: 850px;">
+            <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
                 <span class="close-btn" onclick="document.getElementById('modal_profile_<%= member.id %>').style.display='none'">&times;</span>
+                <h2 style="color:white; margin-bottom:5px; text-align:center;">🗂️ ملف العسكري: <span style="color:var(--warning);"><%= member.realName %></span></h2>
+                <p style="text-align:center; color:gray; margin-bottom:20px; border-bottom: 2px solid var(--danger); padding-bottom: 10px;">الرقم الوطني: <%= member.nationalId %> | ديسكورد: <%= member.username %></p>
                 
-                <h2 style="text-align:center; color:var(--warning);">بطاقة البيانات العسكرية</h2>
-                
-                <div class="profile-section" style="border-color: var(--primary);">
-                    <h3 style="color: var(--primary);">🆔 البيانات التعريفية (تحديث)</h3>
-                    <form action="/system/personnel/update-info" method="POST" style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px;">
+                <div class="profile-section" style="border-color: #9B59B6;">
+                    <h3 style="color: #9B59B6;">🎖️ الشهادات والرخص الحاصل عليها</h3>
+                    <% if(!member.certs || member.certs.length === 0) { %>
+                        <p style="color:var(--text-muted); text-align:center;">لا توجد شهادات مسجلة لهذا العسكري.</p>
+                    <% } else { %>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <% member.certs.forEach(cId => { %>
+                                <div class="cert-tag">
+                                    <span style="color: white; font-weight: bold;"><%= certTypes[cId] ? certTypes[cId].name : cId %></span>
+                                    <form action="/system/personnel/revoke-cert" method="POST" onsubmit="return confirm('هل أنت متأكد من سحب هذه الشهادة من العسكري؟');" style="margin:0;">
+                                        <input type="hidden" name="targetId" value="<%= member.id %>">
+                                        <input type="hidden" name="certId" value="<%= cId %>">
+                                        <button class="btn-danger" style="padding: 2px 8px; font-size: 11px;">سحب ❌</button>
+                                    </form>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="profile-section" style="border-color: var(--danger);">
+                    <h3 style="color: var(--danger);">📈 تحديث البيانات، الرتبة، والصلاحيات</h3>
+                    <div style="display:flex; gap:10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <form action="/system/personnel/action" method="POST" style="flex:1; display:flex; gap:5px;">
+                            <input type="hidden" name="targetId" value="<%= member.id %>">
+                            <input type="hidden" name="action" value="update_discord">
+                            <select name="newDiscordRole" style="flex:1; padding: 8px;">
+                                <option value="enlisted" <%= member.discordRank === 'أفراد' ? 'selected' : '' %>>أفراد</option>
+                                <option value="nco" <%= member.discordRank === 'ضباط صف' ? 'selected' : '' %>>ضباط صف</option>
+                                <option value="officer" <%= member.discordRank === 'ضباط' ? 'selected' : '' %>>ضباط</option>
+                            </select>
+                            <button class="btn-primary">حفظ ديسكورد</button>
+                        </form>
+                        <form id="fireForm_<%= member.id %>" action="/system/personnel/action" method="POST" style="display:flex;">
+                            <input type="hidden" name="targetId" value="<%= member.id %>">
+                            <input type="hidden" name="action" value="fire">
+                            <input type="hidden" name="reason" id="fireReason_<%= member.id %>">
+                            <button type="button" class="btn-danger" onclick="firePersonnel('<%= member.id %>')">فصل من القطاع</button>
+                        </form>
+                    </div>
+
+                    <form action="/system/personnel/action" method="POST" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px;">
                         <input type="hidden" name="targetId" value="<%= member.id %>">
-                        <input type="text" name="fullName" value="<%= member.fullName || '' %>" placeholder="الاسم الثنائي العسكري" required>
-                        <input type="text" name="nationalId" value="<%= member.nationalId || '' %>" placeholder="الرقم الوطني" required>
-                        <button class="btn-success">حفظ البيانات ✅</button>
+                        <input type="hidden" name="action" value="update_site">
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" name="newRealName" value="<%= member.realName %>" placeholder="الاسم الثنائي" required style="flex: 1; margin:0;">
+                            <input type="text" name="newNationalId" value="<%= member.nationalId %>" placeholder="الرقم الوطني" required style="flex: 1; margin:0;">
+                            <select name="newSiteRank" style="flex: 1; margin:0;">
+                                <% RANKS_LADDER.forEach(rank => { %>
+                                    <option value="<%= rank %>" <%= member.siteRank === rank ? 'selected' : '' %>><%= rank %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <h4 style="color: var(--primary); margin-bottom: 10px; font-size: 14px;">🔑 تفويض الصلاحيات الإدارية:</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <% for (const [key, label] of Object.entries(PERMISSIONS_LIST)) { %>
+                                <label class="perm-label">
+                                    <input type="checkbox" name="delegatedPerms" value="<%= key %>" class="perm-checkbox" <%= member.delegatedPerms && member.delegatedPerms.includes(key) ? 'checked' : '' %>>
+                                    <%= label %>
+                                </label>
+                            <% } %>
+                        </div>
+                        <button class="btn-warning" style="width: 100%; color:black; font-weight:bold;">حفظ البيانات والصلاحيات 💾</button>
                     </form>
                 </div>
 
+                <div class="profile-section" style="border-color: #3498DB;">
+                    <h3 style="color: #3498DB;">📦 صرف عهدة جديدة</h3>
+                    <div style="display:flex; gap:20px; flex-wrap: wrap;">
+                        <form action="/custody/weapons/issue" method="POST" style="flex:1; display:flex; flex-direction:column; gap:5px;">
+                            <input type="hidden" name="discordId" value="<%= member.id %>">
+                            <input type="text" name="receiverName" value="<%= member.realName %>" required placeholder="اسم العسكري" style="margin:0;" readonly>
+                            <input type="text" name="nationalId" value="<%= member.nationalId %>" required placeholder="الرقم الوطني" style="margin:0;" readonly>
+                            <select name="weaponType" required style="margin:0; padding: 10px; background: rgba(0,0,0,0.5); color: white;">
+                                <option value="" disabled selected>-- اختر السلاح --</option>
+                                <% (custody.weaponTypes || []).forEach(type => { %> <option value="<%= type %>"><%= type %></option> <% }) %>
+                            </select>
+                            <input type="text" name="serialNumber" required placeholder="السيريال (S/N)" style="margin:0;">
+                            <button class="btn-primary" style="margin-top:5px;">صرف سلاح 🔫</button>
+                        </form>
+                        <form action="/custody/vehicles/issue" method="POST" style="flex:1; display:flex; flex-direction:column; gap:5px;">
+                            <input type="hidden" name="discordId" value="<%= member.id %>">
+                            <input type="text" name="receiverName" value="<%= member.realName %>" required placeholder="اسم العسكري" style="margin:0;" readonly>
+                            <input type="text" name="nationalId" value="<%= member.nationalId %>" required placeholder="الرقم الوطني" style="margin:0;" readonly>
+                            <select name="vehicleType" required style="margin:0; padding: 10px; background: rgba(0,0,0,0.5); color: white;">
+                                <option value="" disabled selected>-- اختر المركبة --</option>
+                                <% (custody.vehicleTypes || []).forEach(type => { %> <option value="<%= type %>"><%= type %></option> <% }) %>
+                            </select>
+                            <input type="text" name="plateNumber" required placeholder="رقم اللوحة" style="margin:0;">
+                            <button class="btn-warning" style="margin-top:5px; color:black;">صرف مركبة 🚓</button>
+                        </form>
+                    </div>
                 </div>
+
+                <div class="profile-section" style="border-color: #F1C40F;">
+                    <h3 style="color: #F1C40F;">📋 العهدة المسجلة حالياً</h3>
+                    <% if(memberWeapons.length === 0 && memberVehicles.length === 0) { %>
+                        <p style="color:var(--text-muted); text-align:center;">لا توجد عهدة مسجلة.</p>
+                    <% } else { %>
+                        <table style="background: rgba(0,0,0,0.2); width:100%;">
+                            <% memberWeapons.forEach(w => { %>
+                                <tr>
+                                    <td style="color:white;">🔫 <%= w.weaponType %> <br><span style="color:gray; font-size:12px;">S/N: <%= w.serialNumber %></span></td>
+                                    <td style="text-align:left;"><form action="/system/custody/return" method="POST" onsubmit="return confirm('تأكيد سحب السلاح؟');"><input type="hidden" name="type" value="weapon"><input type="hidden" name="index" value="<%= w.originalIndex %>"><button class="btn-secondary" style="padding:5px 10px; font-size:12px;">استرجاع</button></form></td>
+                                </tr>
+                            <% }) %>
+                            <% memberVehicles.forEach(v => { %>
+                                <tr>
+                                    <td style="color:white;">🚓 <%= v.vehicleType %> <br><span style="color:gray; font-size:12px;">لوحة: <%= v.plateNumber %></span></td>
+                                    <td style="text-align:left;"><form action="/system/custody/return" method="POST" onsubmit="return confirm('تأكيد سحب المركبة؟');"><input type="hidden" name="type" value="vehicle"><input type="hidden" name="index" value="<%= v.originalIndex %>"><button class="btn-secondary" style="padding:5px 10px; font-size:12px;">استرجاع</button></form></td>
+                                </tr>
+                            <% }) %>
+                        </table>
+                    <% } %>
+                </div>
+
+            </div>
         </div>
     <% }) %>
 
     <script>
-        function advancedFilter() {
-            const filter = document.getElementById('searchPersonnel').value.toLowerCase();
-            const rows = document.querySelectorAll('.searchable-row');
-            
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                // البحث الذكي في كل محتوى السطر
-                row.style.display = text.includes(filter) ? "" : "none";
-            });
+        function filterTable(inputId, tableId) { 
+            const filter = document.getElementById(inputId).value.toLowerCase(); 
+            const rows = document.getElementById(tableId).getElementsByClassName('searchable-row'); 
+            for (let i = 0; i < rows.length; i++) { 
+                let text = rows[i].innerText.toLowerCase(); 
+                rows[i].style.display = text.includes(filter) ? "" : "none"; 
+            } 
+        }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) { event.target.style.display = "none"; } }
+        function firePersonnel(userId) { 
+            let reason = prompt('الرجاء كتابة سبب الفصل لإضافته في السجل الشامل:'); 
+            if(reason !== null && reason.trim() !== "") { 
+                document.getElementById('fireReason_' + userId).value = reason; 
+                document.getElementById('fireForm_' + userId).submit(); 
+            } else if(reason !== null) { 
+                alert('يجب كتابة سبب الفصل لحفظه في السجل!'); 
+            } 
         }
     </script>
 </body>
