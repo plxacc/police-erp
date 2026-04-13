@@ -49,17 +49,18 @@ body {
 body::before {
     content: "";
     position: fixed;
-    top: 0; /* يبدأ من أعلى الشاشة */
-    left: 0; /* يبدأ من أقصى اليسار */
-    width: 100vw; /* يأخذ عرض الشاشة بالكامل 100% */
-    height: 100vh; /* يأخذ طول الشاشة بالكامل 100% */
-    background-image: url('/logo.png'); /* تأكد إن مسار الصورة صحيح */
-    background-size: cover; /* 🪄 هذا السطر السحري: يخلي الصورة تتمدد وتغطي كل الفراغات بدون ما تتمطط وتخرب */
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    background-image: url('/logo.png');
+    background-size: cover;
     background-repeat: no-repeat;
-    background-position: center top; /* يركز على وسط وأعلى الصورة عشان ما ينقص شيء مهم */
-    opacity: 0.30; /* درجة الشفافية: تقدر تزيدها أو تنقصها */
-    z-index: -1; /* 🛡️ هذا اللي يضمن إن الصورة تكون "خلف" الشريط العلوي والأزرار */
-    pointer-events: none; /* يمنع الماوس من التفاعل مع الصورة عشان تضغط الأزرار براحتك */
+    /* 👇 هذا السطر اللي تغيره عشان توزن الارتفاع */
+    background-position: center 60px; 
+    opacity: 0.30;
+    z-index: -1;
+    pointer-events: none;
 }
 /* --- تنسيق الشعار المصغر (أضفه في نهاية ملف style.css) --- */
 .home-logo-link {
