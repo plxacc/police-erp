@@ -57,7 +57,7 @@ body::before {
     background-size: cover;
     background-repeat: no-repeat;
     /* 👇 هذا السطر اللي تغيره عشان توزن الارتفاع */
-    background-position: center 60px; 
+    background-position: center 55px; 
     opacity: 0.30;
     z-index: -1;
     pointer-events: none;
