@@ -44,23 +44,23 @@ body {
     position: relative; /* مهم جداً عشان الشعار يثبت في النص */
 }
 
-/* الكود السري اللي بيحط شعارك كـ "علامة مائية" فخمة في الخلفية */
+/* الكود السري بعد التعديل للصورة المستطيلة */
 body::before {
     content: "";
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* يسنتر الشعار بالضبط في نص الشاشة */
-    width: 1000px; /* حجم الشعار (تقدر تكبره أو تصغره) */
-    height: 1000px;
-    background-image: url('/logo.png'); /* تأكد إن الشعار موجود في مجلد public واسمه logo.png */
-    background-size: contain;
+    transform: translate(-50%, -50%); /* يسنتر الصورة بالضبط في نص الشاشة */
+    width: 80vw; /* يأخذ 80% من عرض الشاشة عشان تطلع المستطيل كامل */
+    height: 80vh; /* يأخذ 80% من طول الشاشة */
+    background-image: url('/logo.png'); /* تأكد إن اسم الصورة صحيح */
+    background-size: contain; /* هذا السطر السحري يضمن إن الصورة تطلع بالكامل بدون أي قص */
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.30; /* درجة الشفافية: 0.08 يعني خفيف جداً وما يزعج القراءة */
+    opacity: 0.30; /* درجة الشفافية */
     z-index: -1; /* يخليه ورا كل شيء */
     pointer-events: none; /* عشان ما يمنعك تضغط على الأزرار اللي فوقه */
-    border-radius: 50%; /* يضمن إنه دائري */
+    /* ❌ تم حذف سطر border-radius اللي كان يقص الصورة كدائرة */
 }
 /* --- تنسيق الشعار المصغر (أضفه في نهاية ملف style.css) --- */
 .home-logo-link {
