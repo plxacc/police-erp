@@ -5,6 +5,15 @@ const session = require('express-session');
 const db = require('./database/db'); 
 const { Client, GatewayIntentBits, EmbedBuilder, Events } = require('discord.js');
 
+const PERMISSIONS_LIST = {
+    "manage_questions": "تعديل أسئلة التقديم",
+    "manage_certs": "فتح/إغلاق الدورات وتعديل أسئلتها",
+    "initial_action": "القبول/الرفض المبدئي",
+    "final_action": "التجنيد النهائي/الرفض النهائي",
+    "grant_certs": "قبول/رفض طلبات الشهادات",
+    "manage_custody": "صرف واسترجاع العهدة"
+};
+
 const app = express();
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -438,37 +447,44 @@ app.post('/system/personnel/action', async (req, res) => {
             await db.addNotification(targetId, '🔄 تم تحديث ديسكورد.', 'info'); 
         } 
     }
-    else if (action === 'update_site') { 
-        const oldRank = personnelDB[targetId] ? personnelDB[targetId].rank : "مستجد"; 
-        if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs:[] }; 
-        personnelDB[targetId].rank = newSiteRank; 
-        
-        await safeArchivePush(targetId, { username: targetName, type: 'promotion', details: `ترقية: ${oldRank} -> ${newSiteRank}`, actionBy: req.session.user.username }); 
-        await db.addNotification(targetId, `🎖️ تم ترقيتك إلى: ${newSiteRank}`, 'success'); 
+    else if (action === 'update_site') {
+    const oldRank = personnelDB[targetId] ? personnelDB[targetId].rank : "مستجد";
+    
+    // التحقق إذا كانت الرتبة هي نفسها
+    if (newSiteRank === oldRank) {
+        await db.addNotification(req.session.user.id, `⚠️ العسكري ${targetName} يشغل بالفعل رتبة ${newSiteRank}`, 'info');
+        return res.redirect('/system/personnel');
+    }
+
+    if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs:[] };
+    personnelDB[targetId].rank = newSiteRank;
+    
+    await safeArchivePush(targetId, { 
+        username: targetName, 
+        type: 'promotion', 
+        details: `ترقية/تعديل رتبة: من ${oldRank} إلى ${newSiteRank}`, 
+        actionBy: req.session.user.username 
+    });
+    await db.addNotification(targetId, `🎖️ تم تحديث رتبتك إلى: ${newSiteRank}`, 'success');
     }
     await db.save('personnel', personnelDB); 
-    res.redirect('/system/personnel');
+    res.redirect('/system/personnel');      
 });
 
-app.post('/system/personnel/revoke-cert', async (req, res) => {
+app.post('/system/personnel/update-info', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const { targetId, certId } = req.body; 
-    const personnelDB = await db.get('personnel', {}); 
+    const { targetId, fullName, nationalId } = req.body;
+    const personnelDB = await db.get('personnel', {});
     
-    if (personnelDB[targetId] && personnelDB[targetId].certs) { 
-        personnelDB[targetId].certs = personnelDB[targetId].certs.filter(id => id !== certId); 
-        await db.save('personnel', personnelDB); 
-        
-        const guild = client.guilds.cache.get(process.env.GUILD_ID); 
-        const target = guild.members.cache.get(targetId); 
-        const targetName = target ? target.user.username : "عسكري"; 
-        
-        await safeArchivePush(targetId, { username: targetName, type: 'cert_revoked', details: `سحب شهادة: ${CERT_TYPES[certId] ? CERT_TYPES[certId].name : certId}`, actionBy: req.session.user.username }); 
-        await db.addNotification(targetId, `⚠️ تم سحب شهادة (${CERT_TYPES[certId] ? CERT_TYPES[certId].name : certId}) منك بقرار إداري.`, 'danger'); 
-    }
+    if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs: [] };
+    
+    personnelDB[targetId].fullName = fullName;
+    personnelDB[targetId].nationalId = nationalId;
+    
+    await db.save('personnel', personnelDB);
+    await db.addNotification(req.session.user.id, '✅ تم تحديث بيانات العسكري بنجاح.', 'success');
     res.redirect('/system/personnel');
 });
-
 app.post('/custody/weapons/issue', async (req, res) => { 
     if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/system/personnel'); 
     const custodyDB = await db.get('custody', { weaponLogs: [], vehicleLogs: [] }); 
@@ -539,6 +555,37 @@ app.post('/custody/rules/update', async (req, res) => {
     await db.save('custody', custodyDB); 
     await db.addNotification(req.session.user.id, '✅ تم تحديث قوانين العهدة.', 'success'); 
     res.redirect('/armory'); 
+});
+
+// عرض صفحة الصلاحيات
+app.get('/system/permissions', async (req, res) => {
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+    const permissionsDB = await db.get('permissions', {});
+    const personnelDB = await db.get('personnel', {});
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    
+    // جلب ضباط الصف فقط لإدارة صلاحياتهم
+    const ncos = guild.members.cache.filter(m => m.roles.cache.has(process.env.NCO_ROLE_ID));
+    const ncoList = ncos.map(m => ({
+        id: m.id,
+        username: m.user.username,
+        currentPermissions: permissionsDB[m.id] || []
+    }));
+
+    res.render('permissions', { user: req.session.user, ncoList, PERMISSIONS_LIST });
+});
+
+// حفظ الصلاحيات
+app.post('/system/permissions/update', async (req, res) => {
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+    const { targetId, perms } = req.body;
+    const permissionsDB = await db.get('permissions', {});
+    
+    permissionsDB[targetId] = Array.isArray(perms) ? perms : [perms];
+    await db.save('permissions', permissionsDB);
+    
+    await db.addNotification(targetId, '🔐 تم تحديث صلاحياتك الإدارية من قبل القيادة.', 'warning');
+    res.redirect('/system/permissions');
 });
 
 app.listen(3000, () => console.log('🚀 شغال على السحابة (MongoDB) بكل قوة!'));
