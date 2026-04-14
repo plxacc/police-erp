@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <title>الأكاديمية العسكرية</title>
-    <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8"><title>الأكاديمية العسكرية</title><link rel="stylesheet" href="/style.css">
     <style>
         .app-card { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-right: 5px solid #9B59B6; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
-        .info-item { color: white; font-size: 14px; }
+        .info-item { color: white; font-size: 14px; } .info-item span { color: var(--warning); font-weight: bold; }
         .grade-input { width: 60px; padding: 5px; background: #222; border: 1px solid var(--warning); color: white; text-align: center; border-radius: 5px; }
+        .grade-input[readonly] { border-color: #555; color: #aaa; background: #111; cursor: not-allowed; }
         .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid #9B59B6; animation: fadeIn 0.3s; }
+        .grader-name { font-size: 10px; color: #3498DB; display: block; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -17,7 +17,6 @@
     <div class="container fade-in">
         <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
         <h1 style="text-align:center; color:#9B59B6; margin-bottom: 30px;">🎓 أكاديمية الشرطة</h1>
-
         <input type="text" id="searchAcademy" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAcademy', 'academyContainer')">
 
         <% 
@@ -30,60 +29,61 @@
 
         <div id="academyContainer">
             <h2 style="color: white; border-bottom: 2px solid #9B59B6; padding-bottom: 10px; margin-top:20px;">المتدربين الحاليين (<%= academyApps.length %>)</h2>
-            <% if (academyApps.length === 0) { %><p style="color: gray; margin-bottom: 40px;">لا يوجد متدربين في الأكاديمية حالياً.</p><% } %>
+            <% if (academyApps.length === 0) { %><p style="color: gray;">لا يوجد متدربين حالياً.</p><% } %>
             <% academyApps.forEach(app => { %>
                 <div class="searchable-card app-card">
                     <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                         <h3 style="color: white; margin: 0;">👤 المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
-                        <% if (app.grades) { %>
-                            <% if (app.grades.total >= 65) { %>
-                                <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 5px 15px; border-radius: 5px; color: var(--success); font-weight:bold;">الدرجة: <%= app.grades.total %>/80 (اجتاز ✅)</span>
-                            <% } else { %>
-                                <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">الدرجة: <%= app.grades.total %>/80 (لم يجتز ❌)</span>
-                            <% } %>
-                        <% } else { %>
-                            <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid var(--warning); padding: 5px 15px; border-radius: 5px; color: var(--warning); font-weight:bold;">قيد التدريب ⏳</span>
-                        <% } %>
+                        <% if (app.grades && app.grades.total > 0) { %>
+                            <% if (app.grades.total >= 65) { %> <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 5px 15px; border-radius: 5px; color: var(--success); font-weight:bold;">الدرجة: <%= app.grades.total %>/80 (اجتاز ✅)</span>
+                            <% } else { %> <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">الدرجة: <%= app.grades.total %>/80 (لم يجتز ❌)</span> <% } %>
+                        <% } else { %> <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid var(--warning); padding: 5px 15px; border-radius: 5px; color: var(--warning); font-weight:bold;">قيد التقييم ⏳</span> <% } %>
                     </div>
 
                     <div class="info-grid">
                         <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
-                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span></div>
+                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
+                        <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
+                        <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
                         <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
                         <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:#9B59B6;">عرض الصورة 🖼️</a></div>
                     </div>
 
-                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض إجابات التقديم المبدئي</button>
+                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض الإجابات</button>
                     <div id="answers_<%= app.id %>" class="answers-box">
-                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { 
-                            const qIndex = parseInt(key.split('_')[1]); const qLabel = app.answers[key] ? "سؤال" : key; // اختصار لأن الأسئلة قد تتغير
-                        %>
-                            <p style="color: gray; font-size: 13px; margin: 0;"><%= key %></p>
-                            <p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
+                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { %>
+                            <p style="color: gray; font-size: 13px; margin: 0;"><%= key %></p><p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
                         <% }) %>
                     </div>
 
-                    <% if (perms.canGrade) { %>
+                    <% if (perms.canGrade || user.perms.isOfficer) { %>
+                        <% let g = app.grades || {}; let isOff = user.perms.isOfficer; %>
                         <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
-                            <h4 style="color: var(--warning); margin-bottom: 10px;">📝 رصد درجات الدورة (مدرب الكلية)</h4>
+                            <h4 style="color: var(--warning); margin-bottom: 10px;">📝 رصد وتقييم المدربين</h4>
                             <input type="hidden" name="userId" value="<%= app.id %>">
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-                                <div><label style="color:white; font-size:12px;">الاستيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" required class="grade-input" value="<%= app.grades?.stops || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">مركز العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" required class="grade-input" value="<%= app.grades?.ops || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">التفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" required class="grade-input" value="<%= app.grades?.neg || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">أسئلة عامة (10)</label><br><input type="number" name="general" max="10" min="0" required class="grade-input" value="<%= app.grades?.general || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">حضور 1 (5)</label><br><input type="number" name="att1" max="5" min="0" required class="grade-input" value="<%= app.grades?.att1 || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">حضور 2 (5)</label><br><input type="number" name="att2" max="5" min="0" required class="grade-input" value="<%= app.grades?.att2 || '' %>"></div>
-                                <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ الدرجات 💾</button></div>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
+                                <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>>
+                                    <% if(g.stops?.grader){ %><span class="grader-name"><%= g.stops.grader %></span><% } %></div>
+                                <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>>
+                                    <% if(g.ops?.grader){ %><span class="grader-name"><%= g.ops.grader %></span><% } %></div>
+                                <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>>
+                                    <% if(g.neg?.grader){ %><span class="grader-name"><%= g.neg.grader %></span><% } %></div>
+                                <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>>
+                                    <% if(g.general?.grader){ %><span class="grader-name"><%= g.general.grader %></span><% } %></div>
+                                <div><label style="color:white; font-size:12px;">حضور1 (5)</label><br><input type="number" name="att1" max="5" min="0" class="grade-input" value="<%= g.att1?.value || '' %>" <%= g.att1?.value && !isOff ? 'readonly' : '' %>>
+                                    <% if(g.att1?.grader){ %><span class="grader-name"><%= g.att1.grader %></span><% } %></div>
+                                <div><label style="color:white; font-size:12px;">حضور2 (5)</label><br><input type="number" name="att2" max="5" min="0" class="grade-input" value="<%= g.att2?.value || '' %>" <%= g.att2?.value && !isOff ? 'readonly' : '' %>>
+                                    <% if(g.att2?.grader){ %><span class="grader-name"><%= g.att2.grader %></span><% } %></div>
+                                <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
                             </div>
                         </form>
                     <% } %>
 
+                    <% if (user.perms.isOfficer) { %>
                     <div style="display:flex; gap:10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
                         <% if (perms.canFinalAccept) { %>
                             <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد؟');" style="display:flex; gap:10px; flex:2;">
-                                <input type="hidden" name="userId" value="<%= app.id %>">
-                                <input type="text" name="militaryCode" required placeholder="أدخل الكود العسكري (مثال: 1050)" style="padding: 10px; border-radius: 5px; border: 1px solid var(--success); background: #111; color: white;">
+                                <input type="hidden" name="userId" value="<%= app.id %>"><input type="text" name="militaryCode" required placeholder="الكود العسكري (مثال: 1050)" style="padding: 10px; border-radius: 5px; border: 1px solid var(--success); background: #111; color: white;">
                                 <button type="submit" class="btn-success">تجنيد نهائي واعتماد الكود ✅</button>
                             </form>
                         <% } %>
@@ -94,6 +94,7 @@
                             </form>
                         <% } %>
                     </div>
+                    <% } %>
                 </div>
             <% }) %>
 
@@ -101,7 +102,10 @@
             <% if (failedApps.length === 0) { %><p style="color: gray;">لا يوجد راسبين.</p><% } %>
             <% failedApps.forEach(app => { %>
                 <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
-                    <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                        <h3 style="color: #e74c3c; margin: 0;">❌ الراسب: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span></h3>
+                        <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">الدرجة النهائية: <%= app.grades?.total || '0' %>/80</span>
+                    </div>
                     <div class="info-grid">
                         <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
                         <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.id %></span></div>
@@ -116,17 +120,9 @@
             <% }) %>
         </div>
     </div>
-
     <script>
         function toggleElement(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
-        function filterCards(inputId, containerId) { 
-            const filter = document.getElementById(inputId).value.toLowerCase(); 
-            const cards = document.getElementById(containerId).getElementsByClassName('searchable-card'); 
-            for (let i = 0; i < cards.length; i++) { 
-                let text = cards[i].innerText.toLowerCase(); 
-                cards[i].style.display = text.includes(filter) ? "" : "none"; 
-            } 
-        }
+        function filterCards(inputId, containerId) { const filter = document.getElementById(inputId).value.toLowerCase(); const cards = document.getElementById(containerId).getElementsByClassName('searchable-card'); for (let i = 0; i < cards.length; i++) { let text = cards[i].innerText.toLowerCase(); cards[i].style.display = text.includes(filter) ? "" : "none"; } }
     </script>
 </body>
 </html>

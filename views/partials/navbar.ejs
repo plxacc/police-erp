@@ -7,7 +7,10 @@
         <% if (user && user.perms.isPolice) { %>
             <a href="/police-rules">قوانين العسكر</a> <a href="/armory">العهدة العسكرية</a> <a href="/certificates">الشهادات والرخص</a>
         <% } %>
-        <% if (user && (user.perms.isNCO || user.perms.isOfficer)) { %> <a href="/admin" style="color: #f1c40f;">التقديمات</a> <% } %>
+        <% if (user && (user.perms.isTrainer || user.perms.isOfficer)) { %> 
+            <a href="/admin" style="color: #f1c40f;">التقديمات</a> 
+            <a href="/academy" style="color: #9B59B6;">الأكاديمية العسكرية</a> 
+        <% } %>
         <% if (user && (user.perms.isNCO || user.perms.isOfficer)) { %> <a href="/academy" style="color: #9B59B6;">الأكاديمية العسكرية</a> <% } %>
         <% if (user && user.perms.isOfficer) { %> <a href="/system" style="color: #e74c3c; font-weight: bold;">إدارة نظام الشرطة</a> <% } %>
     </div>

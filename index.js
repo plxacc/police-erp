@@ -253,7 +253,7 @@ app.post('/submit', async (req, res) => {
 });
 
 app.get('/admin', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
+    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
     const appsDB = await db.get('apps', {});
     const questions = await db.get('questions', []);
     
@@ -266,7 +266,7 @@ app.get('/admin', async (req, res) => {
 });
 
 app.get('/academy', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
+    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
     const appsDB = await db.get('apps', {});
     const canFinalAccept = await hasPermission(req.session.user, 'FINAL_ACCEPTANCE');
     const canReject = await hasPermission(req.session.user, 'REJECTION_POWER');
@@ -295,6 +295,7 @@ app.post('/admin/action', async (req, res) => {
         if (!await hasPermission(req.session.user, 'REJECTION_POWER')) return res.redirect('/admin');
         if (target) { await target.roles.remove([process.env.APPLIED_ROLE_ID, process.env.INITIAL_ACCEPT_ROLE_ID]).catch(()=>{}); } 
         appsDB[userId].status = action === 'reject' ? 'rejected_initial' : 'failed_academy';
+        appsDB[userId].rejectReason = reason; // حفظ سبب الرفض للرجوع له
         let logType = action === 'reject' ? 'reject' : 'fail_training';
         let logTitle = action === 'reject' ? 'رفض تقديم' : 'رسوب في الأكاديمية';
         await globalLog(userId, { type: logType, title: logTitle, username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `السبب: ${reason}`, answers: targetData.answers }); 
@@ -305,18 +306,32 @@ app.post('/admin/action', async (req, res) => {
 });
 
 app.post('/admin/grade', async (req, res) => {
-    if (!await hasPermission(req.session.user, 'RECORD_GRADES')) return res.redirect('/admin');
+    if (!await hasPermission(req.session.user, 'RECORD_GRADES')) return res.redirect('/academy');
     const { userId, stops, ops, neg, general, att1, att2 } = req.body; 
     const appsDB = await db.get('apps', {}); 
     const targetData = appsDB[userId];
     
     if(targetData && targetData.status === 'academy') {
-        const total = Number(stops) + Number(ops) + Number(neg) + Number(general) + Number(att1) + Number(att2);
-        targetData.grades = { stops, ops, neg, general, att1, att2, total, gradedBy: req.session.user.username, date: new Date().toLocaleString('ar-SA') };
+        let g = targetData.grades || {};
+        const isOfficer = req.session.user.perms.isOfficer;
+        const graderName = req.session.user.username;
+
+        // يحفظ الدرجة واسم المدرب.. وإذا كان ضابط يقدر يعدل عليها
+        if (stops !== '' && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName };
+        if (ops !== '' && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName };
+        if (neg !== '' && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName };
+        if (general !== '' && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName };
+        if (att1 !== '' && (!g.att1?.value || isOfficer)) g.att1 = { value: att1, grader: graderName };
+        if (att2 !== '' && (!g.att2?.value || isOfficer)) g.att2 = { value: att2, grader: graderName };
+
+        const total = (Number(g.stops?.value)||0) + (Number(g.ops?.value)||0) + (Number(g.neg?.value)||0) + (Number(g.general?.value)||0) + (Number(g.att1?.value)||0) + (Number(g.att2?.value)||0);
+        g.total = total; g.date = new Date().toLocaleString('ar-SA');
+        
+        targetData.grades = g;
         await db.save('apps', appsDB);
-        await globalLog(userId, { type: 'academy_grades', title: 'رصد درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم رصد درجة الدورة: ${total}/80` });
+        await globalLog(userId, { type: 'academy_grades', title: 'رصد درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم رصد/تحديث درجة الدورة: ${total}/80` });
     }
-    res.redirect('/admin');
+    res.redirect('/academy');
 });
 
 app.post('/admin/enlist', async (req, res) => {
