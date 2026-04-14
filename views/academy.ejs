@@ -60,14 +60,26 @@
                                 <h4 style="color: var(--warning); margin-bottom: 10px;">📝 رصد وتقييم المدربين</h4>
                                 <input type="hidden" name="userId" value="<%= app.id %>">
                                 <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
-                                    <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>><br><% if(g.stops?.grader){ %><span class="grader-name"><%= g.stops.grader %></span><% } %></div>
-                                    <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>><br><% if(g.ops?.grader){ %><span class="grader-name"><%= g.ops.grader %></span><% } %></div>
-                                    <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>><br><% if(g.neg?.grader){ %><span class="grader-name"><%= g.neg.grader %></span><% } %></div>
-                                    <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>><br><% if(g.general?.grader){ %><span class="grader-name"><%= g.general.grader %></span><% } %></div>
-                                    <div><label style="color:white; font-size:12px;">حضور1 (5)</label><br><input type="number" name="att1" max="5" min="0" class="grade-input" value="<%= g.att1?.value || '' %>" <%= g.att1?.value && !isOff ? 'readonly' : '' %>><br><% if(g.att1?.grader){ %><span class="grader-name"><%= g.att1.grader %></span><% } %></div>
-                                    <div><label style="color:white; font-size:12px;">حضور2 (5)</label><br><input type="number" name="att2" max="5" min="0" class="grade-input" value="<%= g.att2?.value || '' %>" <%= g.att2?.value && !isOff ? 'readonly' : '' %>><br><% if(g.att2?.grader){ %><span class="grader-name"><%= g.att2.grader %></span><% } %></div>
-                                    <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
-                                </div>
+                                <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>><br>
+                                    <% if(g.stops?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;" title="انتقل لسجل الأفراد للبحث عنه">` : `<span class="grader-name">` %><%= g.stops.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                
+                                <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>><br>
+                                    <% if(g.ops?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                
+                                <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>><br>
+                                    <% if(g.neg?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                
+                                <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>><br>
+                                    <% if(g.general?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                
+                                <div><label style="color:white; font-size:12px;">حضور1 (5)</label><br><input type="number" name="att1" max="5" min="0" class="grade-input" value="<%= g.att1?.value || '' %>" <%= g.att1?.value && !isOff ? 'readonly' : '' %>><br>
+                                    <% if(g.att1?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att1.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                
+                                <div><label style="color:white; font-size:12px;">حضور2 (5)</label><br><input type="number" name="att2" max="5" min="0" class="grade-input" value="<%= g.att2?.value || '' %>" <%= g.att2?.value && !isOff ? 'readonly' : '' %>><br>
+                                    <% if(g.att2?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att2.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                
+                                <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
+                            </div>
                             </form>
                         <% } %>
 

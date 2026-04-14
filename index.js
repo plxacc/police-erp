@@ -318,12 +318,13 @@ app.post('/admin/grade', async (req, res) => {
         const graderName = req.session.user.username;
 
         // 🚨 التعديل السحري: لا تغير اسم المقيم إلا إذا كانت القيمة المدخلة "تختلف" عن القيمة القديمة!
-        if (stops !== '' && stops !== g.stops?.value && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName };
-        if (ops !== '' && ops !== g.ops?.value && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName };
-        if (neg !== '' && neg !== g.neg?.value && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName };
-        if (general !== '' && general !== g.general?.value && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName };
-        if (att1 !== '' && att1 !== g.att1?.value && (!g.att1?.value || isOfficer)) g.att1 = { value: att1, grader: graderName };
-        if (att2 !== '' && att2 !== g.att2?.value && (!g.att2?.value || isOfficer)) g.att2 = { value: att2, grader: graderName };
+        const graderId = req.session.user.id;
+        if (stops !== '' && stops !== g.stops?.value && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName, graderId: graderId };
+        if (ops !== '' && ops !== g.ops?.value && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName, graderId: graderId };
+        if (neg !== '' && neg !== g.neg?.value && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName, graderId: graderId };
+        if (general !== '' && general !== g.general?.value && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName, graderId: graderId };
+        if (att1 !== '' && att1 !== g.att1?.value && (!g.att1?.value || isOfficer)) g.att1 = { value: att1, grader: graderName, graderId: graderId };
+        if (att2 !== '' && att2 !== g.att2?.value && (!g.att2?.value || isOfficer)) g.att2 = { value: att2, grader: graderName, graderId: graderId };
 
         const total = (Number(g.stops?.value)||0) + (Number(g.ops?.value)||0) + (Number(g.neg?.value)||0) + (Number(g.general?.value)||0) + (Number(g.att1?.value)||0) + (Number(g.att2?.value)||0);
         g.total = total; g.date = new Date().toLocaleString('ar-SA');
@@ -517,6 +518,22 @@ app.post('/system/vehicle-types/add', async (req, res) => {
     const custodyDB = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
     if(!custodyDB.vehicleTypes) custodyDB.vehicleTypes = []; 
     custodyDB.vehicleTypes.push(req.body.vehicleName); 
+    await db.save('custody', custodyDB); 
+    res.redirect('/system'); 
+});
+
+app.post('/system/weapon-types/delete', async (req, res) => { 
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/system'); 
+    const custodyDB = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
+    if(custodyDB.weaponTypes) custodyDB.weaponTypes.splice(req.body.index, 1); 
+    await db.save('custody', custodyDB); 
+    res.redirect('/system'); 
+});
+
+app.post('/system/vehicle-types/delete', async (req, res) => { 
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/system'); 
+    const custodyDB = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
+    if(custodyDB.vehicleTypes) custodyDB.vehicleTypes.splice(req.body.index, 1); 
     await db.save('custody', custodyDB); 
     res.redirect('/system'); 
 });
