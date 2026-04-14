@@ -107,6 +107,7 @@ async function globalLog(userId, logData) {
 async function hasPermission(user, permKey) {
     if (!user) return false;
     if (user.perms.isOfficer) return true;
+    if (user.perms.isTrainer && permKey === 'RECORD_GRADES') return true;
     const personnelDB = await db.get('personnel', {});
     const userData = personnelDB[user.id];
     if (userData && userData.delegatedPerms && userData.delegatedPerms.includes(permKey)) return true;
@@ -131,7 +132,8 @@ app.use(async (req, res, next) => {
                     req.session.user.perms.isEnlisted = member.roles.cache.has(process.env.ENLISTED_ROLE_ID);
                     req.session.user.perms.isNCO = member.roles.cache.has(process.env.NCO_ROLE_ID);
                     req.session.user.perms.isOfficer = member.roles.cache.has(process.env.OFFICERS_ROLE_ID);
-                    req.session.user.perms.isPolice = req.session.user.perms.isEnlisted || req.session.user.perms.isNCO || req.session.user.perms.isOfficer;
+                    req.session.user.perms.isTrainer = member.roles.cache.has(process.env.TRAINER_ROLE_ID);
+                    req.session.user.perms.isPolice = req.session.user.perms.isEnlisted || req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer;
                 }
             }
             if (req.session.user.perms.isPolice) {
@@ -263,6 +265,15 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { user: req.session.user, db: appsDB, questions: questions, perms: { canPreAccept, canFinalAccept, canReject, canGrade } }); 
 });
 
+app.get('/academy', async (req, res) => { 
+    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
+    const appsDB = await db.get('apps', {});
+    const canFinalAccept = await hasPermission(req.session.user, 'FINAL_ACCEPTANCE');
+    const canReject = await hasPermission(req.session.user, 'REJECTION_POWER');
+    const canGrade = await hasPermission(req.session.user, 'RECORD_GRADES');
+    res.render('academy', { user: req.session.user, db: appsDB, perms: { canFinalAccept, canReject, canGrade } }); 
+});
+
 app.post('/admin/action', async (req, res) => {
     const { userId, action, reason } = req.body; 
     const appsDB = await db.get('apps', {}); 
@@ -320,7 +331,7 @@ app.post('/admin/enlist', async (req, res) => {
     const target = guild.members.cache.get(userId);
     if (target) { await target.roles.add(process.env.ENLISTED_ROLE_ID).catch(()=>{}); await target.roles.remove([process.env.INITIAL_ACCEPT_ROLE_ID, process.env.APPLIED_ROLE_ID]).catch(()=>{}); }
     
-    const generatedCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const generatedCode = req.body.militaryCode || "0000";
     
     personnelDB[userId] = { 
         rank: "مستجد", certs: [], delegatedPerms: [], 
