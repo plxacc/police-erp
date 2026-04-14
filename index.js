@@ -525,8 +525,10 @@ app.post('/system/vehicle-types/add', async (req, res) => {
 app.post('/system/weapon-types/delete', async (req, res) => { 
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/system'); 
     const custodyDB = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
-    if(custodyDB.weaponTypes) custodyDB.weaponTypes.splice(req.body.index, 1); 
-    await db.save('custody', custodyDB); 
+    if(custodyDB.weaponTypes) {
+        custodyDB.weaponTypes.splice(parseInt(req.body.index), 1); 
+        await db.save('custody', custodyDB); 
+    }
     res.redirect('/system'); 
 });
 
@@ -534,7 +536,7 @@ app.post('/system/vehicle-types/delete', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/system'); 
     const custodyDB = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
     if(custodyDB.vehicleTypes) {
-        custodyDB.vehicleTypes.splice(req.body.index, 1); 
+        custodyDB.vehicleTypes.splice(parseInt(req.body.index), 1); 
         await db.save('custody', custodyDB); 
     }
     res.redirect('/system'); 

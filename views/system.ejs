@@ -34,30 +34,41 @@
         <div class="card" style="border-color: #3498DB; margin-bottom: 40px;">
             <h3 style="color: #3498DB; margin-bottom: 20px;">📦 إعدادات العهدة (تعريف الأسلحة والمركبات للقطاع)</h3>
             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                
                 <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
                     <form action="/system/weapon-types/add" method="POST" style="display:flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" name="weaponName" required placeholder="إضافة نوع سلاح (Pistol...)" style="margin:0;"><button class="btn-success">إضافة</button>
                     </form>
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                         <% if(custody.weaponTypes) { custody.weaponTypes.forEach((type, index) => { %> 
-                           <div style="display:inline-flex; align-items:center; background: rgba(52, 152, 219, 0.1); border: 1px solid #3498DB; border-radius: 5px; overflow:hidden;">
-                               <span style="padding: 5px 10px; font-size:13px; color:white;"><%= type %></span>
-                               <form action="/system/weapon-types/delete" method="POST" style="margin:0; border-right:1px solid #3498DB; display:flex;">
-                                   <input type="hidden" name="index" value="<%= index %>">
-                                   <button type="submit" style="background:#e74c3c; border:none; color:white; padding:5px 10px; cursor:pointer; font-weight:bold;" onclick="return confirm('هل أنت متأكد من حذف هذا السلاح من القائمة؟')">✖</button>
-                               </form>
-                           </div> 
-                       <% }) } %>
+                            <div style="display:inline-flex; align-items:center; background: rgba(52, 152, 219, 0.1); border: 1px solid #3498DB; border-radius: 5px; overflow:hidden;">
+                                <span style="padding: 5px 10px; font-size:13px; color:white;"><%= type %></span>
+                                <form action="/system/weapon-types/delete" method="POST" style="margin:0; border-right:1px solid #3498DB; display:flex;">
+                                    <input type="hidden" name="index" value="<%= index %>">
+                                    <button type="submit" style="background:#e74c3c; border:none; color:white; padding:5px 10px; cursor:pointer; font-weight:bold;" onclick="return confirm('هل أنت متأكد من حذف هذا السلاح من القائمة؟')">✖</button>
+                                </form>
+                            </div> 
+                        <% }) } %>
                     </div>
                 </div>
+
                 <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
                     <form action="/system/vehicle-types/add" method="POST" style="display:flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" name="vehicleName" required placeholder="إضافة نوع مركبة (Taurus...)" style="margin:0;"><button class="btn-warning" style="color:black; font-weight:bold;">إضافة</button>
                     </form>
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                        <% if(custody.vehicleTypes) { custody.vehicleTypes.forEach(type => { %> <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid #F1C40F; padding: 5px 10px; border-radius: 5px; font-size:12px;"><%= type %></span> <% }) } %>
+                        <% if(custody.vehicleTypes) { custody.vehicleTypes.forEach((type, index) => { %> 
+                            <div style="display:inline-flex; align-items:center; background: rgba(241, 196, 15, 0.1); border: 1px solid #F1C40F; border-radius: 5px; overflow:hidden;">
+                                <span style="padding: 5px 10px; font-size:13px; color:white;"><%= type %></span>
+                                <form action="/system/vehicle-types/delete" method="POST" style="margin:0; border-right:1px solid #F1C40F; display:flex;">
+                                    <input type="hidden" name="index" value="<%= index %>">
+                                    <button type="submit" style="background:#e74c3c; border:none; color:white; padding:5px 10px; cursor:pointer; font-weight:bold;" onclick="return confirm('هل أنت متأكد من حذف هذه المركبة من القائمة؟')">✖</button>
+                                </form>
+                            </div> 
+                        <% }) } %>
                     </div>
                 </div>
+                
             </div>
         </div>
 
