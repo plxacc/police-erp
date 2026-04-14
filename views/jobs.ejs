@@ -4,29 +4,28 @@
     <meta charset="UTF-8">
     <title>بوابة التجنيد - وزارة الداخلية</title>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .form-step { display: none; }
+        .form-step.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--primary); color: white; border-radius: 8px; margin: 0; box-sizing: border-box; }
+        .form-label { color: var(--primary); font-size: 14px; margin-bottom: 5px; display: block; font-weight: bold; }
+    </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
 
     <div class="container fade-in" style="text-align:center;">
-        
-        <h1 style="color: var(--primary); font-weight: 900; margin-bottom: 5px;">| التقديم في الشرطه |</h1>
+        <h1 style="color: var(--primary); font-weight: 900; margin-bottom: 5px;">| بوابة التجنيد العسكري |</h1>
         <hr style="border-color: var(--glass-border); width: 50%; margin: 10px auto 30px auto;">
 
         <% if (user && user.perms.isOfficer) { %>
             <div class="card" style="border-color: var(--warning); margin-bottom: 40px; background: rgba(245, 158, 11, 0.1);">
                 <h3 style="color: var(--warning);">⚙️ إدارة بوابة التجنيد</h3>
-                <p>التقديم حالياً: 
-                    <% if (appsOpen) { %>
-                        <strong style="color: var(--success); font-size: 20px;">مفتوح</strong>
-                    <% } else { %>
-                        <strong style="color: var(--danger); font-size: 20px;">مغلق</strong>
-                    <% } %>
-                </p>
+                <p>الوضع الحالي: <% if (appsOpen) { %><strong style="color: var(--success);">مفتوح</strong><% } else { %><strong style="color: var(--danger);">مغلق</strong><% } %></p>
                 <form action="/admin/toggle-apps" method="POST" style="margin-top: 15px;">
-                    <button type="submit" class="<%= appsOpen ? 'btn-danger' : 'btn-success' %>">
-                        <%= appsOpen ? 'إغلاق التقديم الفوري' : 'فتح التقديم الآن' %>
-                    </button>
+                    <button type="submit" class="<%= appsOpen ? 'btn-danger' : 'btn-success' %>"><%= appsOpen ? 'إغلاق التقديم الفوري' : 'فتح التقديم الآن' %></button>
                 </form>
             </div>
         <% } %>
@@ -37,79 +36,85 @@
                 <p>> 1- العمر 18 سنه فما فوق</p>
                 <p>> 2- المايك جودته ممتازه وغير مزعج</p>
                 <p>> 3- ان تكون شخصية الوظائف الحكومية وان لا يكون بها اي سجل اجرامي</p>
-                <p>> 4- احضار > راديو + جوال + اكلك + شربك > خلال الدورة والحصص</p>
-                <p>> 5- ملامح وجة الشخصية كاملاً يجب تغييره لوجه مميز <span style="color: var(--danger);">|| مهم جداً - سيتم رفض الكثير لهذا السبب ||</span></p>
-                <p>> 6- اولاً التقديم الالكتروني عن طريق موقع الشرطه ! وبعد ذلك القبول المبدئي وجوب تواجدك بالبس الرسمي ( جاكيت & كرفته الخ ... ) في قسم الشرطة</p>
-                <p>> 7- تقمص شخصيتك كرجل امن ممتاز والحوارات مع المواطنين بشكل ممتاز</p>
-                <p>> 8- الجديه وعدم الضحك و الاستهبال في التقديم قد يعرضك بلاك ليست من الشرطة</p>
-                <p>> 9- يحق ادارة الشرطة بالرفض بسبب اكتفاء الذاتي بالتقديمات</p>
-                <p>> 10- يمنع الاسماء الغير واقعيه و اسماء الشخصيات المعروفه او المكرره يجب ان تكون اسماء محترمه و تكون لائق للشرطة</p>
-                <p>> 11- اي خطا منك اثناء التقديم سيتم رفضك بشكل مباشرة ولا يحق لك تعديل اي سؤال</p>
-            </div>
-
-            <div style="background: rgba(239, 68, 68, 0.1); padding: 20px; border-radius: 10px; border: 1px solid var(--danger); margin: 30px 0;">
-                <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ تــنــبــيــه مــهــم</h3>
-                <p>يرجى عدم فتح تذكرة شرطة للإستفسار عن القبول سيتم اغلاق التذكره بشكل فوري وقد يتم استبعادك من الشرطة</p>
-                <p>الشروط قابله للتعديل في اي وقت</p>
-                <hr style="border-color: var(--glass-border); margin: 10px 0;">
-                <p style="font-size: 14px;">يمنع الاسماء الغير واقعيه - يمنع نسخ القصص - يشترط ان تكون القصة طبيعية بدون مسار عسكري سابق.</p>
-            </div>
-
-            <div style="text-align: center;">
-                <p style="color: var(--text-muted); margin-bottom: 15px;">يرجى مراجعة القوانين الرسمية قبل البدء:</p>
-                <a href="/public-rules" class="btn-primary">📋 مراجعة قوانين المواطنين</a>
-            </div>
+                </div>
         </div>
 
         <div style="margin-top: 50px;">
             <% if (status === 'applied') { %>
-                <div class="card" style="border-color: var(--warning);">
-                    <h2 style="color:var(--warning);">طلبك قيد المراجعة حالياً</h2>
-                    <p>سيتم إرسال الرتبة لك في الديسكورد في حال القبول.</p>
-                </div>
+                <div class="card" style="border-color: var(--warning);"><h2 style="color:var(--warning);">طلبك قيد المراجعة حالياً</h2><p>الرجاء الانتظار حتى يتم التدقيق في ملفك.</p></div>
+            <% } else if (status === 'academy') { %>
+                <div class="card" style="border-color: #9B59B6;"><h2 style="color:#9B59B6;">🎓 أنت الآن في دورة الأكاديمية</h2><p>تم قبولك مبدئياً. التزم بالحضور وتوجيهات المدربين لاجتياز الدورة.</p></div>
             <% } else if (status === 'rejected') { %>
-                <div class="card" style="border-color: var(--danger);">
-                    <h2 style="color:var(--danger);">عذراً، تم رفض طلبك</h2>
-                    <p>لا يمكنك التقديم مجدداً في هذه الفترة.</p>
-                </div>
-            <% } else if (status === 'accepted') { %>
-                <div class="card" style="border-color: var(--success);">
-                    <h2 style="color:var(--success);">مبروك، تم قبولك مبدئياً!</h2>
-                    <p>تفضل بمراجعة القسم بالزي الرسمي لإكمال الإجراءات.</p>
-                </div>
+                <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">عذراً، تم الرفض أو عدم الاجتياز</h2><p>لا يمكنك التقديم مجدداً في هذه الفترة.</p></div>
             <% } else if (!appsOpen) { %>
-                <div class="card" style="border-color: var(--danger);">
-                    <h2 style="color:var(--danger);">التقديم مغلق حالياً</h2>
-                    <p>الرجاء متابعة الديسكورد لمعرفة مواعيد فتح التجنيد.</p>
-                </div>
+                <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">التقديم مغلق حالياً</h2></div>
             <% } else { %>
                 
-                <button onclick="document.getElementById('apply-form').style.display='block'; this.style.display='none'" class="btn-success" style="font-size: 20px; padding: 20px 50px;">بدء كتابة نموذج التقديم</button>
+                <button id="startBtn" onclick="document.getElementById('apply-form').style.display='block'; this.style.display='none'" class="btn-success" style="font-size: 20px; padding: 20px 50px;">بدء نموذج التجنيد</button>
 
-                <div id="apply-form" style="display: none; margin-top: 40px;">
-                    <div class="card" style="border-color: var(--success); text-align: right;">
-                        <h2 style="color:var(--success); text-align:center; margin-bottom: 30px;">نموذج تقديم جهاز الشرطة</h2>
-                        <form action="/submit" method="POST">
-                            <h3 style="color:var(--primary); margin-bottom: 15px;">📝 أسئلة التقديم</h3>
+                <div id="apply-form" style="display: none; margin-top: 40px; text-align: right;">
+                    <form action="/submit" method="POST" class="card" style="border-color: var(--success);">
+                        
+                        <div id="step1" class="form-step active">
+                            <h2 style="color:var(--success); text-align:center; margin-bottom: 20px;">الخطوة 1: البيانات الشخصية الإجبارية</h2>
+                            
+                            <div class="input-grid">
+                                <div><label class="form-label">الاسم الثنائي للشخصية</label><input type="text" name="realName" class="form-input" required placeholder="مثال: فهد الدوسري"></div>
+                                <div><label class="form-label">رقم الهوية الوطنية</label><input type="number" name="nationalId" class="form-input" required placeholder="رقم من 6 خانات"></div>
+                                <div><label class="form-label">آيدي الديسكورد (مستخرج تلقائياً)</label><input type="text" class="form-input" value="<%= user.id %>" readonly style="color:gray;"></div>
+                                <div><label class="form-label">تاريخ الميلاد</label><input type="date" name="dob" class="form-input" required></div>
+                                <div><label class="form-label">العمر</label><input type="number" name="age" class="form-input" required placeholder="مثال: 25"></div>
+                                <div><label class="form-label">الجنسية</label><input type="text" name="nationality" class="form-input" required placeholder="مثال: سعودي"></div>
+                                <div><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-input" required placeholder="مثال: 0500000000"></div>
+                                <div><label class="form-label">رابط صورة الهوية/الشخصية</label><input type="url" name="imageUrl" class="form-input" required placeholder="https://..."></div>
+                            </div>
+                            
+                            <button type="button" class="btn-primary" style="width:100%; font-size:18px;" onclick="nextStep()">التالي: أسئلة التقديم ⬅️</button>
+                        </div>
+
+                        <div id="step2" class="form-step">
+                            <h2 style="color:var(--success); text-align:center; margin-bottom: 20px;">الخطوة 2: أسئلة المقابلة</h2>
                             <% if (questions && questions.length > 0) { %>
                                 <% questions.forEach((q, index) => { %>
-                                   <label style="color: var(--text-muted); margin-bottom: 5px; display: block;"><%= index + 1 %>. <%= q.label %></label>
-                                   <textarea name="q_<%= index %>" required rows="2" placeholder="أدخل إجابتك هنا..." style="margin-bottom: 20px;"></textarea>
+                                   <label style="color: var(--warning); margin-bottom: 5px; display: block; font-weight:bold;"><%= index + 1 %>. <%= q.label %></label>
+                                   <textarea name="q_<%= index %>" class="form-input" required rows="3" placeholder="أدخل إجابتك هنا بوضوح..." style="margin-bottom: 20px;"></textarea>
                                <% }) %>
                            <% } else { %>
-                               <p style="color: var(--warning);">لا توجد أسئلة حالياً، الرجاء مراجعة الإدارة.</p>
+                               <p style="color: var(--danger); text-align:center;">لا توجد أسئلة حالياً، الرجاء مراجعة الإدارة.</p>
                            <% } %>
 
-                          <label style="display:flex; align-items:center; gap:10px; margin-bottom: 20px; cursor:pointer;">
-                              <input type="checkbox" required style="width:auto; margin:0;">
-                              <span style="color:var(--text-muted);">أتعهد بأنني قرأت القوانين وأن جميع إجاباتي صحيحة.</span>
+                          <label style="display:flex; align-items:center; gap:10px; margin-bottom: 20px; cursor:pointer; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                              <input type="checkbox" required style="width:20px; height:20px; margin:0;">
+                              <span style="color:white; font-size:14px;">أتعهد بأن جميع بياناتي المدخلة صحيحة، وأقر بقوانين العسكرية.</span>
                           </label>
-                          <button type="submit" class="btn-success" style="width:100%; font-size:20px;">إرسال طلب الانضمام</button>
-                      </form>
-                    </div>
+                          
+                          <div style="display:flex; gap:10px;">
+                              <button type="button" class="btn-secondary" style="flex:1;" onclick="prevStep()">➡️ رجوع</button>
+                              <button type="submit" class="btn-success" style="flex:3; font-size:20px;">إرسال ملف التجنيد 📥</button>
+                          </div>
+                        </div>
+
+                    </form>
                 </div>
             <% } %>
         </div>
     </div>
+
+    <script>
+        function nextStep() {
+            // تحقق بسيط من تعبئة الحقول الأساسية قبل الانتقال
+            let inputs = document.getElementById('step1').querySelectorAll('input[required]');
+            let isValid = true;
+            inputs.forEach(input => { if(!input.value) isValid = false; });
+            if(!isValid) return alert("الرجاء تعبئة جميع البيانات الشخصية أولاً!");
+            
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+        }
+        function prevStep() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+        }
+    </script>
 </body>
 </html>
