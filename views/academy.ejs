@@ -9,25 +9,30 @@
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .info-item { color: white; font-size: 14px; }
         .grade-input { width: 60px; padding: 5px; background: #222; border: 1px solid var(--warning); color: white; text-align: center; border-radius: 5px; }
+        .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid #9B59B6; animation: fadeIn 0.3s; }
     </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
     <div class="container fade-in">
         <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
-        <h1 style="text-align:center; color:#9B59B6; margin-bottom: 30px;">🎓 الأكاديمية العسكرية ونتائج الدورات</h1>
+        <h1 style="text-align:center; color:#9B59B6; margin-bottom: 30px;">🎓 أكاديمية الشرطة</h1>
+
+        <input type="text" id="searchAcademy" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAcademy', 'academyContainer')">
 
         <% 
-        let academyApps = [];
-        Object.entries(db).forEach(([id, app]) => { if (app.status === 'academy') academyApps.push({ id, ...app }); });
+        let academyApps = []; let failedApps = [];
+        Object.entries(db).forEach(([id, app]) => { 
+            if (app.status === 'academy') academyApps.push({ id, ...app }); 
+            else if (app.status === 'failed_academy') failedApps.push({ id, ...app });
+        });
         %>
 
-        <h2 style="color: white; border-bottom: 2px solid #9B59B6; padding-bottom: 10px;">المتدربين الحاليين (<%= academyApps.length %>)</h2>
-        <% if (academyApps.length === 0) { %>
-            <p style="color: gray; margin-bottom: 40px;">لا يوجد متدربين في الأكاديمية حالياً.</p>
-        <% } else { %>
+        <div id="academyContainer">
+            <h2 style="color: white; border-bottom: 2px solid #9B59B6; padding-bottom: 10px; margin-top:20px;">المتدربين الحاليين (<%= academyApps.length %>)</h2>
+            <% if (academyApps.length === 0) { %><p style="color: gray; margin-bottom: 40px;">لا يوجد متدربين في الأكاديمية حالياً.</p><% } %>
             <% academyApps.forEach(app => { %>
-                <div class="app-card">
+                <div class="searchable-card app-card">
                     <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                         <h3 style="color: white; margin: 0;">👤 المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
                         <% if (app.grades) { %>
@@ -41,6 +46,23 @@
                         <% } %>
                     </div>
 
+                    <div class="info-grid">
+                        <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span></div>
+                        <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
+                        <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:#9B59B6;">عرض الصورة 🖼️</a></div>
+                    </div>
+
+                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض إجابات التقديم المبدئي</button>
+                    <div id="answers_<%= app.id %>" class="answers-box">
+                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { 
+                            const qIndex = parseInt(key.split('_')[1]); const qLabel = app.answers[key] ? "سؤال" : key; // اختصار لأن الأسئلة قد تتغير
+                        %>
+                            <p style="color: gray; font-size: 13px; margin: 0;"><%= key %></p>
+                            <p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
+                        <% }) %>
+                    </div>
+
                     <% if (perms.canGrade) { %>
                         <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
                             <h4 style="color: var(--warning); margin-bottom: 10px;">📝 رصد درجات الدورة (مدرب الكلية)</h4>
@@ -50,8 +72,8 @@
                                 <div><label style="color:white; font-size:12px;">مركز العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" required class="grade-input" value="<%= app.grades?.ops || '' %>"></div>
                                 <div><label style="color:white; font-size:12px;">التفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" required class="grade-input" value="<%= app.grades?.neg || '' %>"></div>
                                 <div><label style="color:white; font-size:12px;">أسئلة عامة (10)</label><br><input type="number" name="general" max="10" min="0" required class="grade-input" value="<%= app.grades?.general || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">حضور الحصة 1 (5)</label><br><input type="number" name="att1" max="5" min="0" required class="grade-input" value="<%= app.grades?.att1 || '' %>"></div>
-                                <div><label style="color:white; font-size:12px;">حضور الحصة 2 (5)</label><br><input type="number" name="att2" max="5" min="0" required class="grade-input" value="<%= app.grades?.att2 || '' %>"></div>
+                                <div><label style="color:white; font-size:12px;">حضور 1 (5)</label><br><input type="number" name="att1" max="5" min="0" required class="grade-input" value="<%= app.grades?.att1 || '' %>"></div>
+                                <div><label style="color:white; font-size:12px;">حضور 2 (5)</label><br><input type="number" name="att2" max="5" min="0" required class="grade-input" value="<%= app.grades?.att2 || '' %>"></div>
                                 <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ الدرجات 💾</button></div>
                             </div>
                         </form>
@@ -74,7 +96,37 @@
                     </div>
                 </div>
             <% }) %>
-        <% } %>
+
+            <h2 style="color: #e74c3c; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-top: 50px;">الراسبين بالأكاديمية (الرفض النهائي) (<%= failedApps.length %>)</h2>
+            <% if (failedApps.length === 0) { %><p style="color: gray;">لا يوجد راسبين.</p><% } %>
+            <% failedApps.forEach(app => { %>
+                <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
+                    <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
+                    <div class="info-grid">
+                        <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                        <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.id %></span></div>
+                    </div>
+                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px; font-size:12px;">👁️ عرض الإجابات (للأرشفة)</button>
+                    <div id="answers_<%= app.id %>" class="answers-box">
+                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { %>
+                            <p style="color: gray; font-size: 13px; margin: 0;"><%= key %></p><p style="color: white; margin-bottom: 10px;"><%= ans %></p>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
     </div>
+
+    <script>
+        function toggleElement(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+        function filterCards(inputId, containerId) { 
+            const filter = document.getElementById(inputId).value.toLowerCase(); 
+            const cards = document.getElementById(containerId).getElementsByClassName('searchable-card'); 
+            for (let i = 0; i < cards.length; i++) { 
+                let text = cards[i].innerText.toLowerCase(); 
+                cards[i].style.display = text.includes(filter) ? "" : "none"; 
+            } 
+        }
+    </script>
 </body>
 </html>

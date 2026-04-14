@@ -9,44 +9,49 @@
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .info-item { color: white; font-size: 14px; }
         .info-item span { color: var(--warning); font-weight: bold; }
+        .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid var(--warning); animation: fadeIn 0.3s; }
     </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
     <div class="container fade-in">
         <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
-        <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">📄 إدارة التقديمات الجديدة</h1>
+        <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">📄 إدارة التقديمات المبدئية</h1>
+
+        <input type="text" id="searchAdmin" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد (الآيدي)، أو الرقم الوطني..." onkeyup="filterCards('searchAdmin', 'adminContainer')">
 
         <% 
-        let newApps = [];
+        let newApps = []; let rejectedApps = [];
         Object.entries(db).forEach(([id, app]) => {
             if (app.status === 'applied') newApps.push({ id, ...app });
+            else if (app.status === 'rejected_initial' || app.status === 'rejected') rejectedApps.push({ id, ...app });
         });
         %>
 
-        <h2 style="color: white; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">المتقدمين الجدد (<%= newApps.length %> طلب)</h2>
-        <% if (newApps.length === 0) { %>
-            <p style="color: gray;">لا توجد طلبات تقديم جديدة حالياً.</p>
-        <% } else { %>
+        <div id="adminContainer">
+            <h2 style="color: white; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 20px;">المتقدمين الجدد (<%= newApps.length %>)</h2>
+            <% if (newApps.length === 0) { %><p style="color: gray;">لا توجد طلبات تقديم جديدة.</p><% } %>
             <% newApps.forEach(app => { %>
-                <div class="app-card">
+                <div class="searchable-card app-card">
                     <h3 style="color: white; margin-bottom: 10px;">👤 المتقدم: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(<%= app.date %>)</span></h3>
                     
                     <div class="info-grid">
                         <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
-                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span></div>
+                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
                         <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
-                        <div class="info-item">الديسكورد: <span><%= app.username %></span></div>
+                        <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
+                        <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
                         <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:var(--primary);">عرض الصورة 🖼️</a></div>
                     </div>
 
-                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <h4 style="color: var(--warning); margin-bottom: 10px;">إجابات المقابلة:</h4>
+                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ إظهار / إخفاء إجابات المقابلة</button>
+                    
+                    <div id="answers_<%= app.id %>" class="answers-box">
                         <% Object.entries(app.answers || {}).forEach(([key, ans]) => { 
                             const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key;
                         %>
                             <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p>
-                            <p style="color: white; margin-bottom: 10px;"><%= ans %></p>
+                            <p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
                         <% }) %>
                     </div>
 
@@ -66,7 +71,37 @@
                     </div>
                 </div>
             <% }) %>
-        <% } %>
+
+            <h2 style="color: #e74c3c; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-top: 50px;">المرفوضين مبدئياً (<%= rejectedApps.length %>)</h2>
+            <% if (rejectedApps.length === 0) { %><p style="color: gray;">لا يوجد مرفوضين مبدئياً.</p><% } %>
+            <% rejectedApps.forEach(app => { %>
+                <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
+                    <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ المتقدم: <%= app.personalInfo?.realName || app.username %></h3>
+                    <div class="info-grid">
+                        <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                        <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.id %></span></div>
+                    </div>
+                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px; font-size:12px;">👁️ عرض الإجابات (للأرشفة)</button>
+                    <div id="answers_<%= app.id %>" class="answers-box">
+                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
+                            <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px;"><%= ans %></p>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
     </div>
+
+    <script>
+        function toggleElement(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+        function filterCards(inputId, containerId) { 
+            const filter = document.getElementById(inputId).value.toLowerCase(); 
+            const cards = document.getElementById(containerId).getElementsByClassName('searchable-card'); 
+            for (let i = 0; i < cards.length; i++) { 
+                let text = cards[i].innerText.toLowerCase(); 
+                cards[i].style.display = text.includes(filter) ? "" : "none"; 
+            } 
+        }
+    </script>
 </body>
 </html>

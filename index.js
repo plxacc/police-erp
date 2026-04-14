@@ -107,7 +107,7 @@ async function globalLog(userId, logData) {
 async function hasPermission(user, permKey) {
     if (!user) return false;
     if (user.perms.isOfficer) return true;
-    if (user.perms.isTrainer && permKey === 'RECORD_GRADES') return true;
+    if (user.perms.isTrainer && (permKey === 'RECORD_GRADES' || permKey === 'PRE_ACCEPTANCE')) return true;
     const personnelDB = await db.get('personnel', {});
     const userData = personnelDB[user.id];
     if (userData && userData.delegatedPerms && userData.delegatedPerms.includes(permKey)) return true;
@@ -253,7 +253,7 @@ app.post('/submit', async (req, res) => {
 });
 
 app.get('/admin', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer)) return res.redirect('/'); 
+    if (!req.session.user || !(req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
     const appsDB = await db.get('apps', {});
     const questions = await db.get('questions', []);
     
@@ -294,7 +294,7 @@ app.post('/admin/action', async (req, res) => {
     else if (action === 'reject' || action === 'fail_training') { 
         if (!await hasPermission(req.session.user, 'REJECTION_POWER')) return res.redirect('/admin');
         if (target) { await target.roles.remove([process.env.APPLIED_ROLE_ID, process.env.INITIAL_ACCEPT_ROLE_ID]).catch(()=>{}); } 
-        appsDB[userId].status = 'rejected'; 
+        appsDB[userId].status = action === 'reject' ? 'rejected_initial' : 'failed_academy';
         let logType = action === 'reject' ? 'reject' : 'fail_training';
         let logTitle = action === 'reject' ? 'رفض تقديم' : 'رسوب في الأكاديمية';
         await globalLog(userId, { type: logType, title: logTitle, username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `السبب: ${reason}`, answers: targetData.answers }); 
@@ -481,7 +481,7 @@ app.post('/system/reset-rejected', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/'); 
     const appsDB = await db.get('apps', {}); 
     let count = 0; 
-    for (const userId in appsDB) { if (appsDB[userId].status === 'rejected') { delete appsDB[userId]; count++; } } 
+    for (const userId in appsDB) { if (appsDB[userId].status === 'rejected' || appsDB[userId].status === 'rejected_initial' || appsDB[userId].status === 'failed_academy') { delete appsDB[userId]; count++; } }
     await db.save('apps', appsDB); 
     await db.addNotification(req.session.user.id, `✅ تم مسح الحظر عن ${count} متقدمين.`, 'success'); 
     res.redirect('/system'); 
