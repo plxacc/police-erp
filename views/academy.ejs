@@ -33,8 +33,8 @@
                         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                             <h3 style="color: white; margin: 0;">👤 المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
                             <% if (app.grades && app.grades.total > 0) { %>
-                                <% if (app.grades.total >= 65) { %> <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 5px 15px; border-radius: 5px; color: var(--success); font-weight:bold;">الدرجة: <%= app.grades.total %>/80 (اجتاز ✅)</span>
-                                <% } else { %> <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">الدرجة: <%= app.grades.total %>/80 (لم يجتز ❌)</span> <% } %>
+                                <% if (app.grades.total >= 65) { %> <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 5px 15px; border-radius: 5px; color: var(--success); font-weight:bold;">الدرجة: <%= app.grades.total %>/75 (اجتاز ✅)</span>
+                                <% } else { %> <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">الدرجة: <%= app.grades.total %>/75 (لم يجتز ❌)</span> <% } %>
                             <% } else { %> <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid var(--warning); padding: 5px 15px; border-radius: 5px; color: var(--warning); font-weight:bold;">قيد التقييم ⏳</span> <% } %>
                         </div>
 
@@ -59,27 +59,24 @@
                             <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
                                 <h4 style="color: var(--warning); margin-bottom: 10px;">📝 رصد وتقييم المدربين</h4>
                                 <input type="hidden" name="userId" value="<%= app.id %>">
-                                  <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
-                                      <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>><br>
-                                         <% if(g.stops?.grader){ %><%- isOff && g.stops.graderId ? `<a href="/system/personnel?open=${g.stops.graderId}" class="grader-name" style="text-decoration:underline;" title="فتح ملف المقيم مباشرة">` : `<span class="grader-name">` %><%= g.stops.grader %><%- isOff && g.stops.graderId ? `</a>` : `</span>` %><% } %></div>
+                                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
+                                        <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" style="direction: ltr; font-family: monospace;" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>><br>
+                                            <% if(g.stops?.grader){ %><%- isOff && g.stops.graderId ? `<a href="/system/personnel?open=${g.stops.graderId}" class="grader-name" style="text-decoration:underline;" title="فتح ملف المقيم مباشرة">` : `<span class="grader-name">` %><%= g.stops.grader %><%- isOff && g.stops.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                      <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>><br>
-                                         <% if(g.ops?.grader){ %><%- isOff && g.ops.graderId ? `<a href="/system/personnel?open=${g.ops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- isOff && g.ops.graderId ? `</a>` : `</span>` %><% } %></div>
+                                        <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" style="direction: ltr; font-family: monospace;" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>><br>
+                                            <% if(g.ops?.grader){ %><%- isOff && g.ops.graderId ? `<a href="/system/personnel?open=${g.ops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- isOff && g.ops.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                      <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>><br>
-                                         <% if(g.neg?.grader){ %><%- isOff && g.neg.graderId ? `<a href="/system/personnel?open=${g.neg.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- isOff && g.neg.graderId ? `</a>` : `</span>` %><% } %></div>
+                                        <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" style="direction: ltr; font-family: monospace;" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>><br>
+                                            <% if(g.neg?.grader){ %><%- isOff && g.neg.graderId ? `<a href="/system/personnel?open=${g.neg.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- isOff && g.neg.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                      <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>><br>
-                                         <% if(g.general?.grader){ %><%- isOff && g.general.graderId ? `<a href="/system/personnel?open=${g.general.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- isOff && g.general.graderId ? `</a>` : `</span>` %><% } %></div>
+                                        <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" style="direction: ltr; font-family: monospace;" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>><br>
+                                            <% if(g.general?.grader){ %><%- isOff && g.general.graderId ? `<a href="/system/personnel?open=${g.general.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- isOff && g.general.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                      <div><label style="color:white; font-size:12px;">حضور1 (5)</label><br><input type="number" name="att1" max="5" min="0" class="grade-input" value="<%= g.att1?.value || '' %>" <%= g.att1?.value && !isOff ? 'readonly' : '' %>><br>
-                                         <% if(g.att1?.grader){ %><%- isOff && g.att1.graderId ? `<a href="/system/personnel?open=${g.att1.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att1.grader %><%- isOff && g.att1.graderId ? `</a>` : `</span>` %><% } %></div>
+                                        <div><label style="color:white; font-size:12px;">الحضور (5)</label><br><input type="number" name="att" max="5" min="0" class="grade-input" style="direction: ltr; font-family: monospace;" value="<%= g.att?.value || '' %>" <%= g.att?.value && !isOff ? 'readonly' : '' %>><br>
+                                            <% if(g.att?.grader){ %><%- isOff && g.att.graderId ? `<a href="/system/personnel?open=${g.att.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att.grader %><%- isOff && g.att.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                      <div><label style="color:white; font-size:12px;">حضور2 (5)</label><br><input type="number" name="att2" max="5" min="0" class="grade-input" value="<%= g.att2?.value || '' %>" <%= g.att2?.value && !isOff ? 'readonly' : '' %>><br>
-                                         <% if(g.att2?.grader){ %><%- isOff && g.att2.graderId ? `<a href="/system/personnel?open=${g.att2.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att2.grader %><%- isOff && g.att2.graderId ? `</a>` : `</span>` %><% } %></div>
-                                
-                                      <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
-                                  </div>
+                                    <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
+                               </div>
                             </form>
                         <% } %>
 
@@ -112,15 +109,16 @@
                     <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                             <h3 style="color: #e74c3c; margin: 0;">❌ الراسب: <%= app.personalInfo?.realName || app.username %> <br><span style="font-size:14px; color:white;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span></h3>
-                            <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold; align-self:flex-start;">الدرجة النهائية: <%= app.grades?.total || '0' %>/80</span>
+                            <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold; align-self:flex-start;">الدرجة النهائية: <%= app.grades?.total || '0' %>/75</span>
                         </div>
 
                         <% if (app.grades) { %>
                         <div style="display:flex; gap:10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px; flex-wrap:wrap;">
-                            <div class="info-item">استيقافات: <span><%= app.grades.stops?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.stops?.grader||'-' %></small></div>
-                            <div class="info-item">عمليات: <span><%= app.grades.ops?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.ops?.grader||'-' %></small></div>
-                            <div class="info-item">تفاوض: <span><%= app.grades.neg?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.neg?.grader||'-' %></small></div>
-                            <div class="info-item">عامة: <span><%= app.grades.general?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.general?.grader||'-' %></small></div>
+                            <div class="info-item">استيقافات: <span style="font-family: monospace; font-size: 15px;"><%= app.grades.stops?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.stops?.grader||'-' %></small></div>
+                            <div class="info-item">عمليات: <span style="font-family: monospace; font-size: 15px;"><%= app.grades.ops?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.ops?.grader||'-' %></small></div>
+                            <div class="info-item">تفاوض: <span style="font-family: monospace; font-size: 15px;"><%= app.grades.neg?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.neg?.grader||'-' %></small></div>
+                            <div class="info-item">عامة: <span style="font-family: monospace; font-size: 15px;"><%= app.grades.general?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.general?.grader||'-' %></small></div>
+                            <div class="info-item">الحضور: <span style="font-family: monospace; font-size: 15px;"><%= app.grades.att?.value||'0' %></span> <br><small style="color:gray;"><%= app.grades.att?.grader||'-' %></small></div>
                         </div>
                         <% } %>
 

@@ -308,7 +308,7 @@ app.post('/admin/action', async (req, res) => {
 
 app.post('/admin/grade', async (req, res) => {
     if (!await hasPermission(req.session.user, 'RECORD_GRADES')) return res.redirect('/academy');
-    const { userId, stops, ops, neg, general, att1, att2 } = req.body; 
+    const { userId, stops, ops, neg, general, att } = req.body; 
     const appsDB = await db.get('apps', {}); 
     const targetData = appsDB[userId];
     
@@ -316,22 +316,20 @@ app.post('/admin/grade', async (req, res) => {
         let g = targetData.grades || {};
         const isOfficer = req.session.user.perms.isOfficer;
         const graderName = req.session.user.username;
-
-        // 🚨 التعديل السحري: لا تغير اسم المقيم إلا إذا كانت القيمة المدخلة "تختلف" عن القيمة القديمة!
         const graderId = req.session.user.id;
+
         if (stops !== '' && stops !== g.stops?.value && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName, graderId: graderId };
         if (ops !== '' && ops !== g.ops?.value && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName, graderId: graderId };
         if (neg !== '' && neg !== g.neg?.value && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName, graderId: graderId };
         if (general !== '' && general !== g.general?.value && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName, graderId: graderId };
-        if (att1 !== '' && att1 !== g.att1?.value && (!g.att1?.value || isOfficer)) g.att1 = { value: att1, grader: graderName, graderId: graderId };
-        if (att2 !== '' && att2 !== g.att2?.value && (!g.att2?.value || isOfficer)) g.att2 = { value: att2, grader: graderName, graderId: graderId };
+        if (att !== '' && att !== g.att?.value && (!g.att?.value || isOfficer)) g.att = { value: att, grader: graderName, graderId: graderId };
 
-        const total = (Number(g.stops?.value)||0) + (Number(g.ops?.value)||0) + (Number(g.neg?.value)||0) + (Number(g.general?.value)||0) + (Number(g.att1?.value)||0) + (Number(g.att2?.value)||0);
+        const total = (Number(g.stops?.value)||0) + (Number(g.ops?.value)||0) + (Number(g.neg?.value)||0) + (Number(g.general?.value)||0) + (Number(g.att?.value)||0);
         g.total = total; g.date = new Date().toLocaleString('ar-SA');
         
         targetData.grades = g;
         await db.save('apps', appsDB);
-        await globalLog(userId, { type: 'academy_grades', title: 'تحديث درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم تحديث درجة الدورة لتصبح: ${total}/80` });
+        await globalLog(userId, { type: 'academy_grades', title: 'تحديث درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم تحديث درجة الدورة لتصبح: ${total}/75` });
     }
     res.redirect('/academy');
 });
@@ -359,7 +357,7 @@ app.post('/admin/enlist', async (req, res) => {
     }; 
     await db.save('personnel', personnelDB);
     
-    let gradeText = targetData.grades ? `(بدرجة ${targetData.grades.total}/80)` : '(بدون درجات)';
+    let gradeText = targetData.grades ? `(بدرجة ${targetData.grades.total}/75)` : '(بدون درجات)';
     await globalLog(userId, { type: 'enlist', title: 'تجنيد نهائي', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, militaryCode: generatedCode, actionBy: req.session.user.username, details: `تجنيد بالكود العسكري ${generatedCode} ${gradeText}`, answers: targetData.answers }); 
     
     try {
