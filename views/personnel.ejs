@@ -228,6 +228,17 @@
         function filterTable(inputId, tableId) { const filter = document.getElementById(inputId).value.toLowerCase(); const rows = document.getElementById(tableId).getElementsByClassName('searchable-row'); for (let i = 0; i < rows.length; i++) { let text = rows[i].innerText.toLowerCase(); rows[i].style.display = text.includes(filter) ? "" : "none"; } }
         window.onclick = function(event) { if (event.target.classList.contains('modal')) { event.target.style.display = "none"; } }
         function firePersonnel(userId) { let reason = prompt('الرجاء كتابة سبب الفصل لإضافته في السجل الشامل:'); if(reason !== null && reason.trim() !== "") { document.getElementById('fireReason_' + userId).value = reason; document.getElementById('fireForm_' + userId).submit(); } else if(reason !== null) { alert('يجب كتابة سبب الفصل لحفظه في السجل!'); } }
+        // 🚀 كود ذكي: يفتح ملف العسكري مباشرة إذا جاء الضابط من رابط فيه الآيدي
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const openModalId = urlParams.get('open');
+            if (openModalId) {
+                const targetModal = document.getElementById('modal_profile_' + openModalId);
+                if (targetModal) {
+                    targetModal.style.display = 'block';
+                }
+            }
+        };
     </script>
 </body>
 </html>

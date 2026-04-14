@@ -59,27 +59,27 @@
                             <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
                                 <h4 style="color: var(--warning); margin-bottom: 10px;">📝 رصد وتقييم المدربين</h4>
                                 <input type="hidden" name="userId" value="<%= app.id %>">
-                                <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
-                                <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>><br>
-                                    <% if(g.stops?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;" title="انتقل لسجل الأفراد للبحث عنه">` : `<span class="grader-name">` %><%= g.stops.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                  <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
+                                      <div><label style="color:white; font-size:12px;">استيقافات (20)</label><br><input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>><br>
+                                         <% if(g.stops?.grader){ %><%- isOff && g.stops.graderId ? `<a href="/system/personnel?open=${g.stops.graderId}" class="grader-name" style="text-decoration:underline;" title="فتح ملف المقيم مباشرة">` : `<span class="grader-name">` %><%= g.stops.grader %><%- isOff && g.stops.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>><br>
-                                    <% if(g.ops?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                      <div><label style="color:white; font-size:12px;">العمليات (20)</label><br><input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>><br>
+                                         <% if(g.ops?.grader){ %><%- isOff && g.ops.graderId ? `<a href="/system/personnel?open=${g.ops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- isOff && g.ops.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>><br>
-                                    <% if(g.neg?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                      <div><label style="color:white; font-size:12px;">تفاوض (20)</label><br><input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>><br>
+                                         <% if(g.neg?.grader){ %><%- isOff && g.neg.graderId ? `<a href="/system/personnel?open=${g.neg.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- isOff && g.neg.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>><br>
-                                    <% if(g.general?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                      <div><label style="color:white; font-size:12px;">عامة (10)</label><br><input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>><br>
+                                         <% if(g.general?.grader){ %><%- isOff && g.general.graderId ? `<a href="/system/personnel?open=${g.general.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- isOff && g.general.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                <div><label style="color:white; font-size:12px;">حضور1 (5)</label><br><input type="number" name="att1" max="5" min="0" class="grade-input" value="<%= g.att1?.value || '' %>" <%= g.att1?.value && !isOff ? 'readonly' : '' %>><br>
-                                    <% if(g.att1?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att1.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                      <div><label style="color:white; font-size:12px;">حضور1 (5)</label><br><input type="number" name="att1" max="5" min="0" class="grade-input" value="<%= g.att1?.value || '' %>" <%= g.att1?.value && !isOff ? 'readonly' : '' %>><br>
+                                         <% if(g.att1?.grader){ %><%- isOff && g.att1.graderId ? `<a href="/system/personnel?open=${g.att1.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att1.grader %><%- isOff && g.att1.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                <div><label style="color:white; font-size:12px;">حضور2 (5)</label><br><input type="number" name="att2" max="5" min="0" class="grade-input" value="<%= g.att2?.value || '' %>" <%= g.att2?.value && !isOff ? 'readonly' : '' %>><br>
-                                    <% if(g.att2?.grader){ %><%- isOff ? `<a href="/system/personnel" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att2.grader %><%- isOff ? `</a>` : `</span>` %><% } %></div>
+                                      <div><label style="color:white; font-size:12px;">حضور2 (5)</label><br><input type="number" name="att2" max="5" min="0" class="grade-input" value="<%= g.att2?.value || '' %>" <%= g.att2?.value && !isOff ? 'readonly' : '' %>><br>
+                                         <% if(g.att2?.grader){ %><%- isOff && g.att2.graderId ? `<a href="/system/personnel?open=${g.att2.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att2.grader %><%- isOff && g.att2.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
-                            </div>
+                                      <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
+                                  </div>
                             </form>
                         <% } %>
 
