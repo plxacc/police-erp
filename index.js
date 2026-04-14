@@ -107,7 +107,7 @@ async function globalLog(userId, logData) {
 async function hasPermission(user, permKey) {
     if (!user) return false;
     if (user.perms.isOfficer) return true;
-    if (user.perms.isTrainer && (permKey === 'RECORD_GRADES' || permKey === 'PRE_ACCEPTANCE')) return true;
+    if (user.perms.isTrainer && (permKey === 'RECORD_GRADES' || permKey === 'PRE_ACCEPTANCE' || permKey === 'REJECTION_POWER')) return true;
     const personnelDB = await db.get('personnel', {});
     const userData = personnelDB[user.id];
     if (userData && userData.delegatedPerms && userData.delegatedPerms.includes(permKey)) return true;
@@ -266,12 +266,13 @@ app.get('/admin', async (req, res) => {
 });
 
 app.get('/academy', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
+    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/'); 
     const appsDB = await db.get('apps', {});
+    const questions = await db.get('questions', []); // 👈 هذي اللي كانت ناقصة
     const canFinalAccept = await hasPermission(req.session.user, 'FINAL_ACCEPTANCE');
     const canReject = await hasPermission(req.session.user, 'REJECTION_POWER');
     const canGrade = await hasPermission(req.session.user, 'RECORD_GRADES');
-    res.render('academy', { user: req.session.user, db: appsDB, perms: { canFinalAccept, canReject, canGrade } }); 
+    res.render('academy', { user: req.session.user, db: appsDB, questions: questions, perms: { canFinalAccept, canReject, canGrade } }); 
 });
 
 app.post('/admin/action', async (req, res) => {
@@ -340,7 +341,7 @@ app.post('/admin/enlist', async (req, res) => {
     const appsDB = await db.get('apps', {}); 
     const personnelDB = await db.get('personnel', {}); 
     const targetData = appsDB[userId];
-    if(!targetData || targetData.status !== 'academy') return res.redirect('/admin');
+    if(!targetData || (targetData.status !== 'academy' && targetData.status !== 'failed_academy')) return res.redirect('/admin');
     
     const guild = client.guilds.cache.get(process.env.GUILD_ID); 
     const target = guild.members.cache.get(userId);
@@ -584,13 +585,13 @@ app.post('/system/personnel/action', async (req, res) => {
         delete personnelDB[targetId]; 
         await globalLog(targetId, { type: 'fire', title: 'فصل وطي قيد', username: targetData.realName, nationalId: targetData.nationalId, militaryCode: targetData.militaryCode, actionBy: req.session.user.username, details: `السبب: ${reason}` }); 
         await db.addNotification(targetId, `⚠️ تم فصلك.`, 'danger'); 
-    } 
-    else if (action === 'update_discord') { 
-        if (target) { 
-            await target.roles.remove([process.env.NCO_ROLE_ID, process.env.OFFICERS_ROLE_ID]).catch(()=>{}); 
-            await target.roles.add(process.env.ENLISTED_ROLE_ID).catch(()=>{}); 
-            if (newDiscordRole === 'nco') await target.roles.add(process.env.NCO_ROLE_ID).catch(()=>{}); 
-            else if (newDiscordRole === 'officer') await target.roles.add(process.env.OFFICERS_ROLE_ID).catch(()=>{}); 
+    }
+     else if (action === 'update_code') { 
+        if (personnelDB[targetId]) {
+            const oldCode = personnelDB[targetId].militaryCode;
+            personnelDB[targetId].militaryCode = req.body.newCode;
+            await globalLog(targetId, { type: 'promotion', title: 'تحديث الكود العسكري', username: targetData.realName, nationalId: targetData.nationalId, militaryCode: req.body.newCode, actionBy: req.session.user.username, details: `تغيير الكود من ${oldCode || 'بدون'} إلى ${req.body.newCode}` }); 
+            await db.addNotification(targetId, `🔄 تم تحديث الكود العسكري إلى ${req.body.newCode}`, 'success');
             
             await globalLog(targetId, { type: 'promotion', title: 'تحديث فئة ديسكورد', username: targetData.realName, nationalId: targetData.nationalId, militaryCode: targetData.militaryCode, actionBy: req.session.user.username, details: `تحديث الفئة إلى: ${newDiscordRole}` }); 
             await db.addNotification(targetId, '🔄 تم تحديث فئة الديسكورد.', 'info'); 

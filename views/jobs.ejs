@@ -44,8 +44,10 @@
                 <div class="card" style="border-color: var(--warning);"><h2 style="color:var(--warning);">طلبك قيد المراجعة حالياً</h2><p>الرجاء الانتظار حتى يتم التدقيق في ملفك.</p></div>
             <% } else if (status === 'academy') { %>
                 <div class="card" style="border-color: #9B59B6;"><h2 style="color:#9B59B6;">🎓 أنت الآن في دورة الأكاديمية</h2><p>تم قبولك مبدئياً. التزم بالحضور وتوجيهات المدربين لاجتياز الدورة.</p></div>
-            <% } else if (status === 'rejected') { %>
-                <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">عذراً، تم الرفض أو عدم الاجتياز</h2><p>لا يمكنك التقديم مجدداً في هذه الفترة.</p></div>
+            <% } else if (status === 'rejected_initial' || status === 'rejected') { %>
+                <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">عذراً، تم رفض طلبك مبدئياً ❌</h2><p>لم تتطابق الشروط عليك، نتمنى لك التوفيق في التقديمات القادمة.</p></div>
+            <% } else if (status === 'failed_academy') { %>
+                <div class="card" style="border-color: #e74c3c;"><h2 style="color:#e74c3c;">عذراً، لم تجتز دورة الأكاديمية ❌</h2><p>لقد رسبت في الدورة العسكرية ولا يمكنك التجنيد حالياً.</p></div>
             <% } else if (!appsOpen) { %>
                 <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">التقديم مغلق حالياً</h2></div>
             <% } else { %>

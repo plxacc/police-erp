@@ -61,6 +61,11 @@
                     <h2 style="color:white; margin-bottom:5px;">🗂️ ملف العسكري: <span style="color:var(--warning);"><%= member.realName %></span></h2>
                     <div style="display:flex; justify-content:center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
                         <span class="stats-badge">🔢 كود عسكري: <%= member.militaryCode || 'بدون' %></span>
+                        <form action="/system/personnel/action" method="POST" style="display:flex; gap:5px; margin-top:10px;">
+                        <input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="action" value="update_code">
+                        <input type="text" name="newCode" required placeholder="تغيير الكود" value="<%= member.militaryCode %>" style="padding: 5px; border-radius: 5px; border: 1px solid var(--primary); background: #111; color: white; width: 120px;">
+                        <button type="submit" class="btn-primary" style="padding: 5px 10px; font-size:12px;">حفظ 🔄</button>
+                        </form>
                         <span class="stats-badge" style="color:var(--success); border-color:var(--success);">📅 الانضمام: <%= member.joinDate || 'قديم' %></span>
                         <span class="stats-badge" style="color:#9B59B6; border-color:#9B59B6;">🕒 آخر دخول: <%= member.lastLogin || 'غير معروف' %></span>
                     </div>

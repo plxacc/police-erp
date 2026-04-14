@@ -7,6 +7,8 @@
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .info-item { color: white; font-size: 14px; } .info-item span { color: var(--warning); font-weight: bold; }
         .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid var(--warning); animation: fadeIn 0.3s; }
+        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; list-style: none; outline: none; }
+        details[open] summary { margin-bottom: 20px; background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -14,69 +16,65 @@
     <div class="container fade-in">
         <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
         <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">📄 إدارة التقديمات المبدئية</h1>
-        <input type="text" id="searchAdmin" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد (الآيدي)، أو الرقم الوطني..." onkeyup="filterCards('searchAdmin', 'adminContainer')">
+        <input type="text" id="searchAdmin" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAdmin', 'adminContainer')">
 
-        <% 
-        let newApps = []; let rejectedApps = [];
-        Object.entries(db).forEach(([id, app]) => {
-            if (app.status === 'applied') newApps.push({ id, ...app });
-            else if (app.status === 'rejected_initial') rejectedApps.push({ id, ...app });
-        });
-        %>
+        <% let newApps = []; let rejectedApps = []; Object.entries(db).forEach(([id, app]) => { if (app.status === 'applied') newApps.push({ id, ...app }); else if (app.status === 'rejected_initial') rejectedApps.push({ id, ...app }); }); %>
 
         <div id="adminContainer">
-            <h2 style="color: white; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 20px;">المتقدمين الجدد (<%= newApps.length %>)</h2>
-            <% if (newApps.length === 0) { %><p style="color: gray;">لا توجد طلبات تقديم جديدة.</p><% } %>
-            <% newApps.forEach(app => { %>
-                <div class="searchable-card app-card">
-                    <h3 style="color: white; margin-bottom: 10px;">👤 المتقدم: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(<%= app.date %>)</span></h3>
-                    <div class="info-grid">
-                        <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
-                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
-                        <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
-                        <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
-                        <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
-                        <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:var(--primary);">عرض الصورة 🖼️</a></div>
+            <details open style="margin-bottom: 30px;">
+                <summary style="color: var(--primary); border-bottom: 2px solid var(--primary);">📥 المتقدمين الجدد (<%= newApps.length %>) <span>▼</span></summary>
+                <% if (newApps.length === 0) { %><p style="color: gray;">لا توجد طلبات تقديم جديدة.</p><% } %>
+                <% newApps.forEach(app => { %>
+                    <div class="searchable-card app-card">
+                        <h3 style="color: white; margin-bottom: 10px;">👤 المتقدم: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(<%= app.date %>)</span></h3>
+                        <div class="info-grid">
+                            <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                            <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
+                            <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
+                            <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
+                            <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
+                            <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:var(--primary);">عرض الصورة 🖼️</a></div>
+                        </div>
+                        <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ إظهار / إخفاء إجابات المقابلة</button>
+                        <div id="answers_<%= app.id %>" class="answers-box">
+                            <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
+                                <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
+                            <% }) %>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <% if (perms.canPreAccept) { %><form action="/admin/action" method="POST"><input type="hidden" name="userId" value="<%= app.id %>"><input type="hidden" name="action" value="accept"><button type="submit" class="btn-success">قبول مبدئي (للأكاديمية) 🎓</button></form><% } %>
+                            <% if (perms.canReject) { %><form action="/admin/action" method="POST" style="display:flex; gap:5px; flex:1;"><input type="hidden" name="userId" value="<%= app.id %>"><input type="hidden" name="action" value="reject"><input type="text" name="reason" placeholder="سبب الرفض..." required style="flex:1; margin:0;"><button type="submit" class="btn-danger">رفض الطلب ❌</button></form><% } %>
+                        </div>
                     </div>
+                <% }) %>
+            </details>
 
-                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ إظهار / إخفاء إجابات المقابلة</button>
-                    <div id="answers_<%= app.id %>" class="answers-box">
-                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
-                            <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
-                        <% }) %>
-                    </div>
-
-                    <div style="display:flex; gap:10px;">
+            <details style="margin-bottom: 30px;">
+                <summary style="color: #e74c3c; border-bottom: 2px solid #e74c3c;">❌ المرفوضين مبدئياً (<%= rejectedApps.length %>) <span>▼</span></summary>
+                <% if (rejectedApps.length === 0) { %><p style="color: gray;">لا يوجد مرفوضين مبدئياً.</p><% } %>
+                <% rejectedApps.forEach(app => { %>
+                    <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
+                        <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ المرفوض: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span></h3>
+                        <div class="info-grid">
+                            <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                            <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
+                            <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
+                            <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
+                            <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
+                            <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:var(--primary);">عرض الصورة 🖼️</a></div>
+                        </div>
+                        <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض الإجابات (للأرشفة)</button>
+                        <div id="answers_<%= app.id %>" class="answers-box">
+                            <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
+                                <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px;"><%= ans %></p>
+                            <% }) %>
+                        </div>
                         <% if (perms.canPreAccept) { %>
-                            <form action="/admin/action" method="POST"><input type="hidden" name="userId" value="<%= app.id %>"><input type="hidden" name="action" value="accept"><button type="submit" class="btn-success">قبول مبدئي (للأكاديمية) 🎓</button></form>
-                        <% } %>
-                        <% if (perms.canReject) { %>
-                            <form action="/admin/action" method="POST" style="display:flex; gap:5px; flex:1;"><input type="hidden" name="userId" value="<%= app.id %>"><input type="hidden" name="action" value="reject"><input type="text" name="reason" placeholder="سبب الرفض..." required style="flex:1; margin:0;"><button type="submit" class="btn-danger">رفض الطلب ❌</button></form>
+                            <form action="/admin/action" method="POST" onsubmit="return confirm('إرجاع المرفوض وإدخاله للأكاديمية؟');"><input type="hidden" name="userId" value="<%= app.id %>"><input type="hidden" name="action" value="accept"><button type="submit" class="btn-warning" style="color:black; font-weight:bold;">إلغاء الرفض وقبول مبدئي (فرصة ثانية) ♻️</button></form>
                         <% } %>
                     </div>
-                </div>
-            <% }) %>
-
-            <h2 style="color: #e74c3c; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-top: 50px;">المرفوضين مبدئياً (<%= rejectedApps.length %>)</h2>
-            <% if (rejectedApps.length === 0) { %><p style="color: gray;">لا يوجد مرفوضين مبدئياً.</p><% } %>
-            <% rejectedApps.forEach(app => { %>
-                <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
-                    <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ المرفوض: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span></h3>
-                    <div class="info-grid">
-                        <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
-                        <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span></div>
-                        <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
-                        <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
-                        <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
-                    </div>
-                    <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px; font-size:12px;">👁️ عرض الإجابات</button>
-                    <div id="answers_<%= app.id %>" class="answers-box">
-                        <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
-                            <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px;"><%= ans %></p>
-                        <% }) %>
-                    </div>
-                </div>
-            <% }) %>
+                <% }) %>
+            </details>
         </div>
     </div>
     <script>
