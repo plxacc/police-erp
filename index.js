@@ -317,20 +317,20 @@ app.post('/admin/grade', async (req, res) => {
         const isOfficer = req.session.user.perms.isOfficer;
         const graderName = req.session.user.username;
 
-        // يحفظ الدرجة واسم المدرب.. وإذا كان ضابط يقدر يعدل عليها
-        if (stops !== '' && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName };
-        if (ops !== '' && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName };
-        if (neg !== '' && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName };
-        if (general !== '' && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName };
-        if (att1 !== '' && (!g.att1?.value || isOfficer)) g.att1 = { value: att1, grader: graderName };
-        if (att2 !== '' && (!g.att2?.value || isOfficer)) g.att2 = { value: att2, grader: graderName };
+        // 🚨 التعديل السحري: لا تغير اسم المقيم إلا إذا كانت القيمة المدخلة "تختلف" عن القيمة القديمة!
+        if (stops !== '' && stops !== g.stops?.value && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName };
+        if (ops !== '' && ops !== g.ops?.value && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName };
+        if (neg !== '' && neg !== g.neg?.value && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName };
+        if (general !== '' && general !== g.general?.value && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName };
+        if (att1 !== '' && att1 !== g.att1?.value && (!g.att1?.value || isOfficer)) g.att1 = { value: att1, grader: graderName };
+        if (att2 !== '' && att2 !== g.att2?.value && (!g.att2?.value || isOfficer)) g.att2 = { value: att2, grader: graderName };
 
         const total = (Number(g.stops?.value)||0) + (Number(g.ops?.value)||0) + (Number(g.neg?.value)||0) + (Number(g.general?.value)||0) + (Number(g.att1?.value)||0) + (Number(g.att2?.value)||0);
         g.total = total; g.date = new Date().toLocaleString('ar-SA');
         
         targetData.grades = g;
         await db.save('apps', appsDB);
-        await globalLog(userId, { type: 'academy_grades', title: 'رصد درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم رصد/تحديث درجة الدورة: ${total}/80` });
+        await globalLog(userId, { type: 'academy_grades', title: 'تحديث درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم تحديث درجة الدورة لتصبح: ${total}/80` });
     }
     res.redirect('/academy');
 });
