@@ -108,6 +108,8 @@ async function hasPermission(user, permKey) {
     if (!user) return false;
     if (user.perms.isOfficer) return true;
     if (user.perms.isTrainer && (permKey === 'RECORD_GRADES' || permKey === 'PRE_ACCEPTANCE' || permKey === 'REJECTION_POWER')) return true;
+    if (user.perms.isAcademyManager && (permKey === 'RECORD_GRADES' || permKey === 'PRE_ACCEPTANCE' || permKey === 'REJECTION_POWER' || permKey === 'FINAL_ACCEPTANCE')) return true;
+    if (user.perms.isCertManager && (permKey === 'GIVE_CERTS' || permKey === 'OPEN_CLOSE_COURSES' || permKey === 'MANAGE_COURSE_QUESTIONS')) return true;
     const personnelDB = await db.get('personnel', {});
     const userData = personnelDB[user.id];
     if (userData && userData.delegatedPerms && userData.delegatedPerms.includes(permKey)) return true;
@@ -133,7 +135,9 @@ app.use(async (req, res, next) => {
                     req.session.user.perms.isNCO = member.roles.cache.has(process.env.NCO_ROLE_ID);
                     req.session.user.perms.isOfficer = member.roles.cache.has(process.env.OFFICERS_ROLE_ID);
                     req.session.user.perms.isTrainer = member.roles.cache.has(process.env.TRAINER_ROLE_ID);
-                    req.session.user.perms.isPolice = req.session.user.perms.isEnlisted || req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer;
+                    req.session.user.perms.isAcademyManager = member.roles.cache.has(process.env.ACADEMY_MANAGER_ROLE_ID);
+                    req.session.user.perms.isCertManager = member.roles.cache.has(process.env.CERT_MANAGER_ROLE_ID);
+                    req.session.user.perms.isPolice = req.session.user.perms.isEnlisted || req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer || req.session.user.perms.isAcademyManager || req.session.user.perms.isCertManager;
                 }
             }
             if (req.session.user.perms.isPolice) {
@@ -253,7 +257,7 @@ app.post('/submit', async (req, res) => {
 });
 
 app.get('/admin', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/');
+    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer || req.session.user.perms.isAcademyManager)) return res.redirect('/');
     const appsDB = await db.get('apps', {});
     const questions = await db.get('questions', []);
     
@@ -266,7 +270,7 @@ app.get('/admin', async (req, res) => {
 });
 
 app.get('/academy', async (req, res) => { 
-    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer)) return res.redirect('/'); 
+    if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer || req.session.user.perms.isAcademyManager)) return res.redirect('/');
     const appsDB = await db.get('apps', {});
     const questions = await db.get('questions', []); // 👈 هذي اللي كانت ناقصة
     const canFinalAccept = await hasPermission(req.session.user, 'FINAL_ACCEPTANCE');
@@ -314,7 +318,7 @@ app.post('/admin/grade', async (req, res) => {
     
     if(targetData && targetData.status === 'academy') {
         let g = targetData.grades || {};
-        const isOfficer = req.session.user.perms.isOfficer;
+        const canOverride = req.session.user.perms.isOfficer || req.session.user.perms.isAcademyManager;
         const graderName = req.session.user.username;
         const graderId = req.session.user.id;
 

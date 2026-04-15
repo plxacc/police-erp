@@ -7,23 +7,29 @@
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .info-item { color: white; font-size: 14px; } .info-item span { color: var(--warning); font-weight: bold; }
         .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid var(--warning); animation: fadeIn 0.3s; }
-        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; list-style: none; outline: none; }
-        details[open] summary { margin-bottom: 20px; background: rgba(255,255,255,0.1); }
+        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 8px; list-style: none; outline: none; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        details[open] summary { margin-bottom: 20px; }
+        
+        /* 🎨 التلوين الجديد للعناوين */
+        .header-title { text-align:center; color:white; background: var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .summary-new { color: white; background: var(--primary); border: 1px solid #1a5276; }
+        .summary-rejected { color: white; background: #e74c3c; border: 1px solid #922b21; }
     </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
     <div class="container fade-in">
         <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
-        <h1 style="text-align:center; color:var(--primary); margin-bottom: 30px;">📄 إدارة التقديمات المبدئية</h1>
+        
+        <h1 class="header-title">📄 إدارة التقديمات المبدئية</h1>
         <input type="text" id="searchAdmin" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAdmin', 'adminContainer')">
 
         <% let newApps = []; let rejectedApps = []; Object.entries(db).forEach(([id, app]) => { if (app.status === 'applied') newApps.push({ id, ...app }); else if (app.status === 'rejected_initial') rejectedApps.push({ id, ...app }); }); %>
 
         <div id="adminContainer">
             <details open style="margin-bottom: 30px;">
-                <summary style="color: var(--primary); border-bottom: 2px solid var(--primary);">📥 المتقدمين الجدد (<%= newApps.length %>) <span>▼</span></summary>
-                <% if (newApps.length === 0) { %><p style="color: gray;">لا توجد طلبات تقديم جديدة.</p><% } %>
+                <summary class="summary-new">📥 المتقدمين الجدد (<%= newApps.length %>) <span>▼</span></summary>
+                <% if (newApps.length === 0) { %><p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">لا توجد طلبات تقديم جديدة.</p><% } %>
                 <div style="max-height: 60vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
                 <% newApps.forEach(app => { %>
                     <div class="searchable-card app-card">
@@ -52,9 +58,9 @@
             </details>
 
             <details style="margin-bottom: 30px;">
-                <summary style="color: #e74c3c; border-bottom: 2px solid #e74c3c;">❌ المرفوضين مبدئياً (<%= rejectedApps.length %>) <span>▼</span></summary>
-                <% if (rejectedApps.length === 0) { %><p style="color: gray;">لا يوجد مرفوضين مبدئياً.</p><% } %>
-                <div style="max-height: 60vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);"></div>
+                <summary class="summary-rejected">❌ المرفوضين مبدئياً (<%= rejectedApps.length %>) <span>▼</span></summary>
+                <% if (rejectedApps.length === 0) { %><p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">لا يوجد مرفوضين مبدئياً.</p><% } %>
+                <div style="max-height: 60vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
                 <% rejectedApps.forEach(app => { %>
                     <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
                         <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ المرفوض: <%= app.personalInfo?.realName || app.username %> <span style="font-size:12px; color:gray;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span></h3>

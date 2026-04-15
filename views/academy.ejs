@@ -3,34 +3,39 @@
 <head>
     <meta charset="UTF-8"><title>الأكاديمية العسكرية</title><link rel="stylesheet" href="/style.css">
     <style>
-        .app-card { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-right: 5px solid #9B59B6; }
+        .app-card { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-right: 5px solid #3498DB; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .info-item { color: white; font-size: 14px; } .info-item span { color: var(--warning); font-weight: bold; }
         
-        /* تكبير وتحسين حقول الدرجات */
         .grade-input { width: 75px; padding: 8px; font-size: 15px; background: #222; border: 1px solid var(--warning); color: white; text-align: center; border-radius: 5px; direction: ltr; font-family: monospace; }
         .grade-input[readonly] { border-color: #555; color: #aaa; background: #111; cursor: not-allowed; }
         .grade-label { color: white; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
         .grader-name { font-size: 12px; color: #3498DB; display: block; margin-top: 6px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 3px 6px; border-radius: 4px; text-align: center; }
         
-        .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid #9B59B6; animation: fadeIn 0.3s; }
-        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; list-style: none; outline: none; }
-        details[open] summary { margin-bottom: 20px; background: rgba(255,255,255,0.1); }
+        .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid #3498DB; animation: fadeIn 0.3s; }
+        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 8px; list-style: none; outline: none; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        details[open] summary { margin-bottom: 20px; }
+        
+        /* 🎨 التلوين الجديد للعناوين */
+        .header-title-blue { text-align:center; color:white; background: #3498DB; padding: 15px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .summary-academy { color: white; background: #3498DB; border: 1px solid #1a5276; }
+        .summary-rejected { color: white; background: #e74c3c; border: 1px solid #922b21; }
     </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
     <div class="container fade-in">
         <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
-        <h1 style="text-align:center; color:#9B59B6; margin-bottom: 30px;">🎓 أكاديمية الشرطة</h1>
+        
+        <h1 class="header-title-blue">🎓 أكاديمية الشرطة</h1>
         <input type="text" id="searchAcademy" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAcademy', 'academyContainer')">
 
         <% let academyApps = []; let failedApps = []; Object.entries(db).forEach(([id, app]) => { if (app.status === 'academy') academyApps.push({ id, ...app }); else if (app.status === 'failed_academy') failedApps.push({ id, ...app }); }); %>
 
         <div id="academyContainer">
             <details open style="margin-bottom: 30px;">
-                <summary style="color: #9B59B6; border-bottom: 2px solid #9B59B6;">⏳ المتدربين الحاليين (<%= academyApps.length %>) <span>▼</span></summary>
-                <% if (academyApps.length === 0) { %><p style="color: gray; margin-bottom: 40px;">لا يوجد متدربين حالياً.</p><% } %>
+                <summary class="summary-academy">⏳ المتدربين الحاليين (<%= academyApps.length %>) <span>▼</span></summary>
+                <% if (academyApps.length === 0) { %><p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">لا يوجد متدربين حالياً.</p><% } %>
                 <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
                 <% academyApps.forEach(app => { %>
                     <div class="searchable-card app-card">
@@ -48,7 +53,7 @@
                             <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
                             <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
                             <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
-                            <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:#9B59B6;">عرض الصورة 🖼️</a></div>
+                            <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:#3498DB;">عرض الصورة 🖼️</a></div>
                         </div>
 
                         <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض إجابات التقديم المبدئي</button>
@@ -58,51 +63,45 @@
                             <% }) %>
                         </div>
 
-                        <% if (perms.canGrade || user.perms.isOfficer) { %>
-                            <% let g = app.grades || {}; let isOff = user.perms.isOfficer; %>
+                        <% if (perms.canGrade || user.perms.isOfficer || user.perms.isAcademyManager) { %>
+                            <% let g = app.grades || {}; let canOverride = user.perms.isOfficer || user.perms.isAcademyManager; %>
                             <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
-                                <h4 style="color: var(--warning); margin-bottom: 15px; font-size: 16px;">📝 رصد وتقييم المدربين</h4>
+                                <h4 style="color: var(--warning); margin-bottom: 15px; font-size: 16px;">📝 رصد وتقييم الأكاديمية</h4>
                                 <input type="hidden" name="userId" value="<%= app.id %>">
                                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; justify-content: flex-start;">
-                                    
                                     <div style="display:flex; flex-direction:column; align-items:center;">
                                         <label class="grade-label">الاستيقافات (20)</label>
-                                        <input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !isOff ? 'readonly' : '' %>>
-                                        <% if(g.stops?.grader){ %><%- isOff && g.stops.graderId ? `<a href="/system/personnel?open=${g.stops.graderId}" class="grader-name" style="text-decoration:underline;" title="فتح ملف المقيم">` : `<span class="grader-name">` %><%= g.stops.grader %><%- isOff && g.stops.graderId ? `</a>` : `</span>` %><% } %>
+                                        <input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.stops?.grader){ %><%- canOverride && g.stops.graderId ? `<a href="/system/personnel?open=${g.stops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.stops.grader %><%- canOverride && g.stops.graderId ? `</a>` : `</span>` %><% } %>
                                     </div>
-                                    
                                     <div style="display:flex; flex-direction:column; align-items:center;">
                                         <label class="grade-label">العمليات (20)</label>
-                                        <input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !isOff ? 'readonly' : '' %>>
-                                        <% if(g.ops?.grader){ %><%- isOff && g.ops.graderId ? `<a href="/system/personnel?open=${g.ops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- isOff && g.ops.graderId ? `</a>` : `</span>` %><% } %>
+                                        <input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.ops?.grader){ %><%- canOverride && g.ops.graderId ? `<a href="/system/personnel?open=${g.ops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- canOverride && g.ops.graderId ? `</a>` : `</span>` %><% } %>
                                     </div>
-                                    
                                     <div style="display:flex; flex-direction:column; align-items:center;">
                                         <label class="grade-label">التفاوض (20)</label>
-                                        <input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !isOff ? 'readonly' : '' %>>
-                                        <% if(g.neg?.grader){ %><%- isOff && g.neg.graderId ? `<a href="/system/personnel?open=${g.neg.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- isOff && g.neg.graderId ? `</a>` : `</span>` %><% } %>
+                                        <input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.neg?.grader){ %><%- canOverride && g.neg.graderId ? `<a href="/system/personnel?open=${g.neg.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- canOverride && g.neg.graderId ? `</a>` : `</span>` %><% } %>
                                     </div>
-                                    
                                     <div style="display:flex; flex-direction:column; align-items:center;">
                                         <label class="grade-label">أسئلة عامة (10)</label>
-                                        <input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !isOff ? 'readonly' : '' %>>
-                                        <% if(g.general?.grader){ %><%- isOff && g.general.graderId ? `<a href="/system/personnel?open=${g.general.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- isOff && g.general.graderId ? `</a>` : `</span>` %><% } %>
+                                        <input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.general?.grader){ %><%- canOverride && g.general.graderId ? `<a href="/system/personnel?open=${g.general.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- canOverride && g.general.graderId ? `</a>` : `</span>` %><% } %>
                                     </div>
-                                    
                                     <div style="display:flex; flex-direction:column; align-items:center;">
                                         <label class="grade-label">الحضور (5)</label>
-                                        <input type="number" name="att" max="5" min="0" class="grade-input" value="<%= g.att?.value || '' %>" <%= g.att?.value && !isOff ? 'readonly' : '' %>>
-                                        <% if(g.att?.grader){ %><%- isOff && g.att.graderId ? `<a href="/system/personnel?open=${g.att.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att.grader %><%- isOff && g.att.graderId ? `</a>` : `</span>` %><% } %>
+                                        <input type="number" name="att" max="5" min="0" class="grade-input" value="<%= g.att?.value || '' %>" <%= g.att?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.att?.grader){ %><%- canOverride && g.att.graderId ? `<a href="/system/personnel?open=${g.att.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att.grader %><%- canOverride && g.att.graderId ? `</a>` : `</span>` %><% } %>
                                     </div>
-                                    
                                     <div style="margin-top: 25px; align-self: center;">
-                                        <button type="submit" class="btn-warning" style="color:rgb(255, 255, 255); font-weight:bold; padding: 8px 20px; font-size:16px;">حفظ واعتماد 💾</button>
+                                        <button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 8px 20px; font-size:16px;">حفظ واعتماد 💾</button>
                                     </div>
                                 </div>
                             </form>
                         <% } %>
 
-                        <% if (user.perms.isOfficer) { %>
+                        <% if (perms.canFinalAccept || perms.canReject) { %>
                         <div style="display:flex; gap:10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
                             <% if (perms.canFinalAccept) { %>
                                 <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد؟');" style="display:flex; gap:10px; flex:2;">
@@ -124,8 +123,8 @@
             </details>
 
             <details style="margin-bottom: 30px;">
-                <summary style="color: #e74c3c; border-bottom: 2px solid #e74c3c;">❌ الراسبين بالأكاديمية (الرفض النهائي) (<%= failedApps.length %>) <span>▼</span></summary>
-                <% if (failedApps.length === 0) { %><p style="color: gray;">لا يوجد راسبين.</p><% } %>
+                <summary class="summary-rejected">❌ الراسبين بالأكاديمية (الرفض النهائي) (<%= failedApps.length %>) <span>▼</span></summary>
+                <% if (failedApps.length === 0) { %><p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">لا يوجد راسبين.</p><% } %>
                 <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
                 <% failedApps.forEach(app => { %>
                     <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
@@ -160,7 +159,7 @@
                             <% }) %>
                         </div>
 
-                        <% if (user.perms.isOfficer && perms.canFinalAccept) { %>
+                        <% if (perms.canFinalAccept) { %>
                             <form action="/admin/enlist" method="POST" onsubmit="return confirm('إرجاع وتجنيد الراسب كفرصة ثانية؟');" style="display:flex; gap:10px; background:rgba(46, 204, 113, 0.1); padding:10px; border-radius:8px;">
                                 <input type="hidden" name="userId" value="<%= app.id %>">
                                 <input type="text" name="militaryCode" required placeholder="الكود العسكري (تجنيد استثنائي)" style="padding: 10px; border-radius: 5px; border: 1px solid var(--success); background: #111; color: white;">
