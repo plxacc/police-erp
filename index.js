@@ -341,7 +341,8 @@ app.post('/admin/grade', async (req, res) => {
 app.post('/admin/enlist', async (req, res) => {
     if (!await hasPermission(req.session.user, 'FINAL_ACCEPTANCE')) return res.redirect('/admin');
     
-    const { userId, militaryCode } = req.body;
+    // مسحنا الكود العسكري من الاستقبال
+    const { userId } = req.body;
     const appsDB = await db.get('apps', {});
     const personnelDB = await db.get('personnel', {});
     const targetData = appsDB[userId];
@@ -350,25 +351,28 @@ app.post('/admin/enlist', async (req, res) => {
 
     try {
         const guild = client.guilds.cache.get(process.env.GUILD_ID);
-        // 🔄 محاولة جلب العضو مباشرة من السيرفر لضمان عدم التعليق
         const member = await guild.members.fetch(userId).catch(() => null);
 
         if (member) {
-            // ✅ إضافة رتبة الأفراد وإزالة رتب التقديم والأكاديمية فوراً
-            await member.roles.add(process.env.ENLISTED_ROLE_ID);
-            await member.roles.remove([process.env.APPLIED_ROLE_ID, process.env.INITIAL_ACCEPT_ROLE_ID]).catch(()=>{});
+            // 1. إزالة رتب التقديم والأكاديمية
+            await member.roles.remove([process.env.APPLIED_ROLE_ID, process.env.INITIAL_ACCEPT_ROLE_ID]).catch(e => console.log("خطأ في سحب الرتب القديمة:", e));
             
-            // 🏷️ تغيير لقب العسكري في ديسكورد ليحتوي على الكود العسكري (اختياري)
-            await member.setNickname(`[${militaryCode}] ${targetData.personalInfo?.realName || member.user.username}`).catch(()=>{});
+            // 2. إعطاء رتبة الأفراد (بشكل منفصل عشان نضمنها 100%)
+            if (process.env.ENLISTED_ROLE_ID) {
+                await member.roles.add(process.env.ENLISTED_ROLE_ID).catch(e => console.log("خطأ في إعطاء رتبة الأفراد:", e));
+            }
+            
+            // 3. تغيير الاسم في الديسكورد (إلى اسمه الثنائي فقط بدون كود)
+            const newName = targetData.personalInfo?.realName || member.user.username;
+            await member.setNickname(newName).catch(e => console.log("خطأ في تغيير الاسم:", e));
         }
 
-        // حفظ البيانات في السجل العسكري
+        // حفظ العسكري في السجل بدون كود
         personnelDB[userId] = {
             id: userId,
             realName: targetData.personalInfo?.realName,
             username: targetData.username,
             nationalId: targetData.personalInfo?.nationalId,
-            militaryCode: militaryCode,
             siteRank: 'جندي',
             discordRank: 'أفراد',
             joinDate: new Date().toLocaleDateString('ar-SA'),
@@ -379,8 +383,8 @@ app.post('/admin/enlist', async (req, res) => {
         await db.save('apps', appsDB);
         await db.save('personnel', personnelDB);
 
-        await globalLog(userId, { type: 'enlistment', title: 'تجنيد نهائي', username: targetData.username, militaryCode, actionBy: req.session.user.username });
-        await db.addNotification(userId, `🎖️ مبروك! تم قبولك نهائياً واعتماد كودك العسكري: ${militaryCode}`, 'success');
+        await globalLog(userId, { type: 'enlistment', title: 'تجنيد نهائي', username: targetData.username, actionBy: req.session.user.username });
+        await db.addNotification(userId, `🎖️ مبروك! تم قبولك نهائياً وتجنيدك في قطاع الشرطة.`, 'success');
 
     } catch (error) {
         console.error("Error during enlistment:", error);

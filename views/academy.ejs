@@ -120,9 +120,9 @@
                         <% if (perms.canFinalAccept || perms.canReject) { %>
                         <div style="display:flex; gap:10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
                             <% if (perms.canFinalAccept) { %>
-                                <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد؟');" style="display:flex; gap:10px; flex:2;">
-                                    <input type="hidden" name="userId" value="<%= app.id %>"><input type="text" name="militaryCode" required placeholder="الكود العسكري (مثال: 1050)" style="padding: 10px; border-radius: 5px; border: 1px solid var(--success); background: #111; color: white;">
-                                    <button type="submit" class="btn-success">تجنيد نهائي واعتماد الكود ✅</button>
+                                <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد بشكل نهائي؟');" style="display:flex; flex:2;">
+                                    <input type="hidden" name="userId" value="<%= app.id %>">
+                                    <button type="submit" class="btn-success" style="width: 100%;">تجنيد نهائي ✅</button>
                                 </form>
                             <% } %>
                             <% if (perms.canReject) { %>
@@ -176,10 +176,10 @@
                         </div>
 
                         <% if (perms.canFinalAccept) { %>
-                            <form action="/admin/enlist" method="POST" onsubmit="return confirm('إرجاع وتجنيد الراسب كفرصة ثانية؟');" style="display:flex; gap:10px; background:rgba(46, 204, 113, 0.1); padding:10px; border-radius:8px;">
-                                <input type="hidden" name="userId" value="<%= app.id %>">
-                                <input type="text" name="militaryCode" required placeholder="الكود العسكري (تجنيد استثنائي)" style="padding: 10px; border-radius: 5px; border: 1px solid var(--success); background: #111; color: white;">
-                                <button type="submit" class="btn-success">تجنيد نهائي واعتماد الكود ♻️</button>
+                                <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد بشكل نهائي؟');" style="display:flex; flex:2;">
+                                    <input type="hidden" name="userId" value="<%= app.id %>">
+                                    <button type="submit" class="btn-success" style="width: 100%;">تجنيد نهائي ✅</button>
+                                </form>
                             </form>
                         <% } %>
                     </div>
