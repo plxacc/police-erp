@@ -13,13 +13,29 @@
         .grader-name { font-size: 12px; color: #3498DB; display: block; margin-top: 6px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 3px 6px; border-radius: 4px; text-align: center; }
         
         .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid #3498DB; animation: fadeIn 0.3s; }
-        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 8px; list-style: none; outline: none; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        details[open] summary { margin-bottom: 20px; }
+        details summary { cursor: pointer; font-size: 17px; font-weight: bold; padding: 18px 25px; border-radius: 10px; list-style: none; outline: none; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        details[open] summary { margin-bottom: 25px; }
         
-        /* 🎨 التلوين الجديد للعناوين */
-        .header-title-blue { text-align:center; color:white; background: #3498DB; padding: 15px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .summary-academy { color: white; background: #3498DB; border: 1px solid #1a5276; }
-        .summary-rejected { color: white; background: #e74c3c; border: 1px solid #922b21; }
+        /* 🎨 التلوين الزجاجي الفخم (بدل السادة) للأكاديمية */
+        .header-title-blue { 
+            text-align:center; color:white; margin-bottom: 30px; padding: 20px; border-radius: 12px;
+            background: linear-gradient(145deg, rgba(52, 152, 219, 0.15), rgba(0,0,0,0.6)); 
+            border: 1px solid var(--glass-border); border-bottom: 3px solid #3498DB;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        .summary-academy { 
+            color: #93c5fd; 
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.15), rgba(0,0,0,0.6)); 
+            border: 1px solid rgba(52, 152, 219, 0.3); border-right: 4px solid #3498DB; 
+        }
+        .summary-academy:hover { background: linear-gradient(90deg, rgba(52, 152, 219, 0.25), rgba(0,0,0,0.7)); }
+
+        .summary-rejected { 
+            color: #fca5a5; 
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), rgba(0,0,0,0.6)); 
+            border: 1px solid rgba(239, 68, 68, 0.3); border-right: 4px solid var(--danger); 
+        }
+        .summary-rejected:hover { background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(0,0,0,0.7)); }
     </style>
 </head>
 <body>

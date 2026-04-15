@@ -7,13 +7,30 @@
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .info-item { color: white; font-size: 14px; } .info-item span { color: var(--warning); font-weight: bold; }
         .answers-box { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 10px; border-right: 3px solid var(--warning); animation: fadeIn 0.3s; }
-        details summary { cursor: pointer; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 8px; list-style: none; outline: none; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        details[open] summary { margin-bottom: 20px; }
         
-        /* 🎨 التلوين الجديد للعناوين */
-        .header-title { text-align:center; color:white; background: var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .summary-new { color: white; background: var(--primary); border: 1px solid #1a5276; }
-        .summary-rejected { color: white; background: #e74c3c; border: 1px solid #922b21; }
+        details summary { cursor: pointer; font-size: 17px; font-weight: bold; padding: 18px 25px; border-radius: 10px; list-style: none; outline: none; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        details[open] summary { margin-bottom: 25px; }
+        
+        /* 🎨 التلوين الزجاجي الفخم (بدل السادة) */
+        .header-title { 
+            text-align:center; color:white; margin-bottom: 30px; padding: 20px; border-radius: 12px;
+            background: linear-gradient(145deg, rgba(14, 165, 233, 0.15), rgba(0,0,0,0.6)); 
+            border: 1px solid var(--glass-border); border-bottom: 3px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-shadow: 0 0 10px var(--primary-glow);
+        }
+        .summary-new { 
+            color: #7dd3fc; 
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.15), rgba(0,0,0,0.6)); 
+            border: 1px solid rgba(14, 165, 233, 0.3); border-right: 4px solid var(--primary); 
+        }
+        .summary-new:hover { background: linear-gradient(90deg, rgba(14, 165, 233, 0.25), rgba(0,0,0,0.7)); }
+        
+        .summary-rejected { 
+            color: #fca5a5; 
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), rgba(0,0,0,0.6)); 
+            border: 1px solid rgba(239, 68, 68, 0.3); border-right: 4px solid var(--danger); 
+        }
+        .summary-rejected:hover { background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(0,0,0,0.7)); }
     </style>
 </head>
 <body>
