@@ -75,7 +75,7 @@
                                         <div><label style="color:white; font-size:12px;">الحضور (5)</label><br><input type="number" name="att" max="5" min="0" class="grade-input" style="direction: ltr; font-family: monospace;" value="<%= g.att?.value || '' %>" <%= g.att?.value && !isOff ? 'readonly' : '' %>><br>
                                             <% if(g.att?.grader){ %><%- isOff && g.att.graderId ? `<a href="/system/personnel?open=${g.att.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att.grader %><%- isOff && g.att.graderId ? `</a>` : `</span>` %><% } %></div>
                                 
-                                    <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
+                                    <div style="margin-top: 18px;"><button type="submit" class="btn-warning" style="color:rgb(255, 255, 255); font-weight:bold; padding: 6px 15px;">حفظ واعتماد 💾</button></div>
                                </div>
                             </form>
                         <% } %>
