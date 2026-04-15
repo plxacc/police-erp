@@ -340,45 +340,52 @@ app.post('/admin/grade', async (req, res) => {
 
 app.post('/admin/enlist', async (req, res) => {
     if (!await hasPermission(req.session.user, 'FINAL_ACCEPTANCE')) return res.redirect('/admin');
-    const { userId } = req.body; 
-    const appsDB = await db.get('apps', {}); 
-    const personnelDB = await db.get('personnel', {}); 
+    
+    const { userId, militaryCode } = req.body;
+    const appsDB = await db.get('apps', {});
+    const personnelDB = await db.get('personnel', {});
     const targetData = appsDB[userId];
-    if(!targetData || (targetData.status !== 'academy' && targetData.status !== 'failed_academy')) return res.redirect('/admin');
-    
-    const guild = client.guilds.cache.get(process.env.GUILD_ID); 
-    const target = guild.members.cache.get(userId);
-    if (target) { await target.roles.add(process.env.ENLISTED_ROLE_ID).catch(()=>{}); await target.roles.remove([process.env.INITIAL_ACCEPT_ROLE_ID, process.env.APPLIED_ROLE_ID]).catch(()=>{}); }
-    
-    const generatedCode = req.body.militaryCode || "0000";
-    
-    personnelDB[userId] = { 
-        rank: "مستجد", certs: [], delegatedPerms: [], 
-        nationalId: targetData.personalInfo?.nationalId || "0000", 
-        realName: targetData.personalInfo?.realName || targetData.username,
-        militaryCode: generatedCode, joinDate: new Date().toLocaleString('ar-SA'), lastLogin: "جديد",
-        phone: targetData.personalInfo?.phone, dob: targetData.personalInfo?.dob, imageUrl: targetData.personalInfo?.imageUrl
-    }; 
-    await db.save('personnel', personnelDB);
-    
-    let gradeText = targetData.grades ? `(بدرجة ${targetData.grades.total}/75)` : '(بدون درجات)';
-    await globalLog(userId, { type: 'enlist', title: 'تجنيد نهائي', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, militaryCode: generatedCode, actionBy: req.session.user.username, details: `تجنيد بالكود العسكري ${generatedCode} ${gradeText}`, answers: targetData.answers }); 
-    
-    try {
-        const channel = client.channels.cache.get(process.env.LOG_CHANNEL_ID);
-        if (channel) {
-            const embed = new EmbedBuilder().setTitle("🚨 انضمام فرد جديد للقطاع").setColor(0xF1C40F).addFields(
-                { name: "الاسم", value: personnelDB[userId].realName, inline: true }, 
-                { name: "الكود العسكري", value: generatedCode, inline: true }, 
-                { name: "تم التجنيد بواسطة", value: req.session.user.username, inline: false }
-            ).setThumbnail(personnelDB[userId].imageUrl || null).setTimestamp();
-            channel.send({ content: `<@&${process.env.OFFICERS_ROLE_ID}>`, embeds: [embed] }).catch(()=>{});
-        }
-    } catch(e){}
 
-    delete appsDB[userId]; 
-    await db.save('apps', appsDB); 
-    await db.addNotification(userId, `🎖️ تم تجنيدك برتبة مستجد. كودك العسكري هو: ${generatedCode}`, 'success'); 
+    if(!targetData || (targetData.status !== 'academy' && targetData.status !== 'failed_academy')) return res.redirect('/admin');
+
+    try {
+        const guild = client.guilds.cache.get(process.env.GUILD_ID);
+        // 🔄 محاولة جلب العضو مباشرة من السيرفر لضمان عدم التعليق
+        const member = await guild.members.fetch(userId).catch(() => null);
+
+        if (member) {
+            // ✅ إضافة رتبة الأفراد وإزالة رتب التقديم والأكاديمية فوراً
+            await member.roles.add(process.env.ENLISTED_ROLE_ID);
+            await member.roles.remove([process.env.APPLIED_ROLE_ID, process.env.INITIAL_ACCEPT_ROLE_ID]).catch(()=>{});
+            
+            // 🏷️ تغيير لقب العسكري في ديسكورد ليحتوي على الكود العسكري (اختياري)
+            await member.setNickname(`[${militaryCode}] ${targetData.personalInfo?.realName || member.user.username}`).catch(()=>{});
+        }
+
+        // حفظ البيانات في السجل العسكري
+        personnelDB[userId] = {
+            id: userId,
+            realName: targetData.personalInfo?.realName,
+            username: targetData.username,
+            nationalId: targetData.personalInfo?.nationalId,
+            militaryCode: militaryCode,
+            siteRank: 'جندي',
+            discordRank: 'أفراد',
+            joinDate: new Date().toLocaleDateString('ar-SA'),
+            certs: []
+        };
+
+        delete appsDB[userId];
+        await db.save('apps', appsDB);
+        await db.save('personnel', personnelDB);
+
+        await globalLog(userId, { type: 'enlistment', title: 'تجنيد نهائي', username: targetData.username, militaryCode, actionBy: req.session.user.username });
+        await db.addNotification(userId, `🎖️ مبروك! تم قبولك نهائياً واعتماد كودك العسكري: ${militaryCode}`, 'success');
+
+    } catch (error) {
+        console.error("Error during enlistment:", error);
+    }
+
     res.redirect('/admin');
 });
 

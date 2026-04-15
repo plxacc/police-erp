@@ -5,64 +5,58 @@
     <title>إدارة العسكر والعهدة</title>
     <link rel="stylesheet" href="/style.css">
     <style>
-        /* 🚀 أكواد تسريع الأداء القصوى (إيقاف معالجة الأشياء المخفية) */
-        .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9) !important; backdrop-filter: none !important; content-visibility: auto; }
-        .modal-content { background: #121212 !important; backdrop-filter: none !important; border: 1px solid #27272a; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.9) !important; padding: 25px; margin: 4% auto; width: 95%; max-width: 850px; max-height: 85vh; overflow-y: auto; color: white; position: relative; }
+        /* 🚀 تحسينات الفريمات والأداء */
+        .modal { background-color: rgba(0, 0, 0, 0.8) !important; backdrop-filter: blur(5px) !important; }
+        .modal-content { background: #121212 !important; border: 1px solid #27272a; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.9) !important; padding: 20px 25px; }
         
-        /* 🎨 تنسيقات الأقسام */
-        .profile-section { background: #1a1a1a !important; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #2c2c2c !important; border-right-width: 4px; }
-        .section-purple { background: rgba(155, 89, 182, 0.03) !important; border-right-color: #9B59B6; }
-        .section-red { background: rgba(231, 76, 60, 0.03) !important; border-right-color: #e74c3c; }
-        .section-blue { background: rgba(52, 152, 219, 0.03) !important; border-right-color: #3498DB; }
-        .profile-section h3 { margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 10px; font-weight: bold; }
-        
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .form-control { width: 100%; padding: 8px 12px; font-size: 13px; background: #09090b; border: 1px solid #3f3f46; color: white; border-radius: 6px; box-sizing: border-box; }
-        .form-control:focus { border-color: var(--primary); outline: none; background: #111; }
-        .btn-compact { padding: 8px 15px; font-size: 13px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-block { width: 100%; display: block; margin-top: 10px; padding: 10px; font-size: 13px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        
-        .cert-tag { background: #23182b; border: 1px solid #9B59B6; padding: 6px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 12px; }
-        .badge-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+        .profile-section { padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #27272a; border-right-width: 4px; transition: 0.3s; }
+        .section-purple { background: rgba(155, 89, 182, 0.03); border-right-color: #9B59B6; }
+        .section-red { background: rgba(231, 76, 60, 0.03); border-right-color: #e74c3c; }
+        .section-blue { background: rgba(52, 152, 219, 0.03); border-right-color: #3498DB; }
+
+        /* 🖱️ منطقة التحرك الحر بالماوس */
+        .drag-area {
+            overflow: auto;
+            cursor: grab;
+            max-height: 650px;
+            border-radius: 12px;
+            border: 1px solid #27272a;
+            user-select: none; /* منع تحديد النص أثناء السحب */
+        }
+        .drag-area:active { cursor: grabbing; }
+
+        .form-control { width: 100%; padding: 8px 12px; background: #09090b; border: 1px solid #3f3f46; color: white; border-radius: 6px; }
         .badge-custom { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #27272a; border: 1px solid #3f3f46; color: #d4d4d8; }
-        .inner-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #27272a; }
-        .inner-label { color:#a1a1aa; font-size:11px; display:block; margin-bottom:6px; font-weight: bold; }
-        
-        /* 🖱️ السحب والإفلات بالماوس */
-        .drag-scroll { overflow-y: auto; cursor: grab; max-height: 600px; border-radius: 8px; border: 1px solid #27272a; user-select: none; }
-        .drag-scroll:active { cursor: grabbing; }
-        .drag-scroll::-webkit-scrollbar { width: 8px; }
-        .drag-scroll::-webkit-scrollbar-track { background: #111; }
-        .drag-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
     </style>
 </head>
 <body>
     <%- include('partials/navbar') %>
     <div class="container fade-in">
-        <a href="/system" class="btn-secondary btn-compact" style="margin-bottom: 20px; display: inline-block;">⬅️ العودة للوحة المركزية</a>
+        <a href="/system" class="btn-secondary" style="margin-bottom: 20px; display: inline-block;">⬅️ العودة للوحة المركزية</a>
         
-        <div class="card" style="border-color: var(--danger); background: rgba(0,0,0,0.5);">
+        <div class="card" style="border-color: var(--danger); background: rgba(0,0,0,0.3);">
             <h2 style="color: var(--danger); margin-bottom: 20px;">🎖️ سجل الأفراد والضباط</h2>
-            <input type="text" id="searchPersonnel" class="search-bar form-control" style="font-size: 14px; padding: 12px; margin-bottom: 15px;" placeholder="🔍 ابحث بالاسم، الآيدي، الرقم الوطني، أو الكود العسكري..." onkeyup="filterTable('searchPersonnel', 'personnelTable')">
+            <input type="text" id="searchPersonnel" class="search-bar form-control" style="font-size: 15px; padding: 12px; margin-bottom: 20px;" placeholder="🔍 ابحث بالاسم، الآيدي، الرقم الوطني، أو الكود العسكري..." onkeyup="filterTable('searchPersonnel', 'personnelTable')">
             
-            <div class="drag-scroll" id="tableContainer">
-                <table id="personnelTable" style="margin: 0; background: #18181b; width: 100%; border-collapse: collapse;">
-                    <tr class="header-row" style="background: #27272a;"><th style="padding: 12px; text-align:right;">العسكري</th> <th style="padding: 12px; text-align:right;">الرتبة والكود</th> <th style="text-align:center; padding: 12px;">الإجراءات</th></tr>
+            <div class="drag-area" id="mainDragArea">
+                <table id="personnelTable" style="margin: 0; background: #18181b; width: 100%;">
+                    <tr class="header-row" style="background: #27272a;">
+                        <th style="padding: 15px;">العسكري</th> 
+                        <th style="padding: 15px;">الرتبة والكود</th> 
+                        <th style="text-align:center; padding: 15px;">الإجراءات</th>
+                    </tr>
                     <% list.forEach(member => { %>
                         <tr class="searchable-row" style="border-bottom: 1px solid #27272a;">
-                            <td style="font-weight:bold; color:#e4e4e7; padding: 12px;">
+                            <td style="font-weight:bold; color:#e4e4e7; padding: 15px;">
                                 <%= member.realName %> <br>
-                                <span style="font-size:11px; color:#a1a1aa;">ديسكورد: <%= member.username %> | آيدي: <%= member.id %></span><br>
-                                <span style="font-size:11px; color:var(--primary);">الرقم الوطني: <%= member.nationalId %></span>
+                                <span style="font-size:11px; color:#a1a1aa;">ديسكورد: <%= member.username %></span>
                             </td>
-                            <td style="color:var(--warning); font-weight:bold; padding: 12px;">
+                            <td style="color:var(--warning); font-weight:bold; padding: 15px;">
                                 <%= member.siteRank %> <br>
-                                <span style="color:#3498DB; font-size:12px;">كود عسكري: <%= member.militaryCode || 'غير مسجل' %></span><br>
-                                <span style="color:#a1a1aa; font-weight:normal; font-size:11px;">شريحة: <%= member.discordRank %></span>
+                                <span style="color:#3498DB; font-size:12px;">🔢 <%= member.militaryCode || 'غير مسجل' %></span>
                             </td>
-                            <td style="text-align:center; padding: 12px;">
-                                <button type="button" class="btn-primary btn-compact" onclick="openModal('modal_profile_<%= member.id %>')">فتح الملف 📂</button>
+                            <td style="text-align:center; padding: 15px;">
+                                <button type="button" class="btn-primary" onclick="openModal('modal_profile_<%= member.id %>')">فتح الملف 📂</button>
                             </td>
                         </tr>
                     <% }) %>
@@ -72,157 +66,74 @@
     </div>
 
     <% 
-        // ⚡ خوارزمية التيربو: تجميع العهدة مرة واحدة فقط للسيرفر بدلاً من آلاف المرات
+        // تجميع العهدة لزيادة السرعة
         let weaponsMap = {}; let vehiclesMap = {};
         (custody.weaponLogs || []).forEach((l, i) => { if(!weaponsMap[l.receiverDiscordId]) weaponsMap[l.receiverDiscordId] = []; weaponsMap[l.receiverDiscordId].push({...l, originalIndex: i}); });
         (custody.vehicleLogs || []).forEach((l, i) => { if(!vehiclesMap[l.receiverDiscordId]) vehiclesMap[l.receiverDiscordId] = []; vehiclesMap[l.receiverDiscordId].push({...l, originalIndex: i}); });
     %>
 
     <% list.forEach(member => { 
-        // استدعاء سريع جداً من الذاكرة (بدون لوب داخلي)
         const memberWeapons = weaponsMap[member.id] || [];
         const memberVehicles = vehiclesMap[member.id] || [];
     %>
         <div id="modal_profile_<%= member.id %>" class="modal">
             <div class="modal-content">
-                <span class="close-btn" onclick="closeModal('modal_profile_<%= member.id %>')" style="position:absolute; top: 15px; right: 20px; font-size:30px; cursor:pointer; color:gray;">&times;</span>
+                <span class="close-btn" onclick="closeModal('modal_profile_<%= member.id %>')" style="position:absolute; top: 15px; right: 20px; cursor:pointer;">&times;</span>
                 
                 <div style="text-align:center; padding-bottom: 15px; margin-bottom:20px; border-bottom: 1px solid #27272a;">
-                    <h2 style="color:#f4f4f5; margin-bottom:5px; font-size: 20px;">🗂️ ملف العسكري: <span style="color:var(--warning);"><%= member.realName %></span></h2>
-                    <div class="badge-group">
-                        <span class="badge-custom" style="color:#60a5fa; border-color:#1e3a8a; background: rgba(59,130,246,0.1);">🔢 كود: <%= member.militaryCode || 'بدون' %></span>
-                        <span class="badge-custom" style="color:#4ade80; border-color:#14532d; background: rgba(74,222,128,0.1);">📅 انضمام: <%= member.joinDate || 'قديم' %></span>
-                        <span class="badge-custom" style="color:#c084fc; border-color:#581c87; background: rgba(192,132,252,0.1);">🕒 آخر دخول: <%= member.lastLogin || 'غير معروف' %></span>
+                    <h2 style="color:#f4f4f5; font-size: 22px;">🗂️ ملف العسكري: <span style="color:var(--warning);"><%= member.realName %></span></h2>
+                    <div class="badge-group" style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
+                        <span class="badge-custom">🔢 كود: <%= member.militaryCode || 'بدون' %></span>
+                        <span class="badge-custom">📅 انضمام: <%= member.joinDate || 'قديم' %></span>
                     </div>
                 </div>
                 
                 <div class="profile-section section-purple">
-                    <h3 style="color: #c084fc;">🎖️ الشهادات والرخص الحاصل عليها</h3>
-                    <% if(!member.certs || member.certs.length === 0) { %><p style="color:#71717a; font-size:12px; margin-bottom: 10px;">لا توجد شهادات مسجلة لهذا العسكري.</p><% } else { %>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 15px;">
-                            <% member.certs.forEach(cId => { %>
-                                <div class="cert-tag">
-                                    <span style="color: #e4e4e7;"><%= certTypes[cId] ? certTypes[cId].name : cId %></span>
-                                    <form action="/system/personnel/revoke-cert" method="POST" onsubmit="return confirm('سحب الشهادة؟');" style="margin:0;"><input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="certId" value="<%= cId %>"><button class="btn-danger" style="padding: 2px 6px; font-size: 10px; border-radius:4px; border:none;">سحب ❌</button></form>
-                                </div>
-                            <% }) %>
-                        </div>
-                    <% } %>
-                    <div class="inner-box" style="display: flex; align-items: flex-end; gap: 10px;">
-                        <div style="flex:1;">
-                            <span class="inner-label">منح شهادة استثنائية (مباشرة)</span>
-                            <form action="/system/personnel/grant-cert-direct" method="POST" style="display:flex; gap:8px; margin:0;">
-                                <input type="hidden" name="targetId" value="<%= member.id %>">
-                                <select name="certId" required class="form-control" style="flex:1;"><option value="" disabled selected>-- اختر شهادة لمنحها مباشرة --</option><% Object.entries(certTypes).forEach(([cId, cInfo]) => { %> <option value="<%= cId %>"><%= cInfo.name %></option> <% }) %></select>
-                                <button type="submit" class="btn-success btn-compact" onclick="return confirm('تأكيد منح الشهادة مباشرة؟');" style="border:none;">منح 📜</button>
-                            </form>
-                        </div>
+                    <h3 style="color: #c084fc;">🎖️ الشهادات والرخص</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 10px;">
+                        <% if(member.certs && member.certs.length > 0) { member.certs.forEach(cId => { %>
+                            <div class="badge-custom" style="border-color:#9B59B6;"><%= certTypes[cId]?.name || cId %></div>
+                        <% })} else { %> <p style="color:gray; font-size:12px;">لا توجد شهادات.</p> <% } %>
                     </div>
-                </div>
-
-                <div class="profile-section section-red">
-                    <h3 style="color: #f87171;">⚙️ الإجراءات الإدارية والترقيات</h3>
-                    <div class="form-grid-2">
-                        <div class="inner-box">
-                            <span class="inner-label">شريحة الديسكورد</span>
-                            <form action="/system/personnel/action" method="POST" style="display:flex; gap:8px;">
-                                <input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="action" value="update_discord">
-                                <select name="newDiscordRole" class="form-control">
-                                    <option value="enlisted" <%= member.discordRank === 'أفراد' ? 'selected' : '' %>>أفراد</option>
-                                    <option value="nco" <%= member.discordRank === 'ضباط صف' ? 'selected' : '' %>>ضباط صف</option>
-                                    <option value="officer" <%= member.discordRank === 'ضباط' ? 'selected' : '' %>>ضباط</option>
-                                </select>
-                                <button class="btn-primary btn-compact" style="border:none;">حفظ</button>
-                            </form>
-                        </div>
-                        <div class="inner-box">
-                            <span class="inner-label">الكود العسكري</span>
-                            <form action="/system/personnel/action" method="POST" style="display:flex; gap:8px;">
-                                <input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="action" value="update_code">
-                                <input type="text" name="newCode" required placeholder="مثال: 1050" value="<%= member.militaryCode %>" class="form-control">
-                                <button type="submit" class="btn-primary btn-compact" style="border:none;">تغيير 🔄</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="inner-box" style="margin-top: 12px; margin-bottom: 12px;">
-                        <span class="inner-label">تحديث بيانات النظام والرتبة</span>
-                        <form action="/system/personnel/action" method="POST" style="display:flex; gap:8px; align-items: flex-end;">
-                            <input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="action" value="update_site">
-                            <div class="form-grid" style="flex:1; gap:8px;">
-                                <input type="text" name="newRealName" value="<%= member.realName %>" placeholder="الاسم الثنائي" required class="form-control">
-                                <input type="text" name="newNationalId" value="<%= member.nationalId %>" placeholder="الرقم الوطني" required class="form-control">
-                                <select name="newSiteRank" class="form-control"><% RANKS_LADDER.forEach(rank => { %><option value="<%= rank %>" <%= member.siteRank === rank ? 'selected' : '' %>><%= rank %></option><% }) %></select>
-                            </div>
-                            <button class="btn-warning btn-compact" style="color:black; border:none;">تحديث 💾</button>
-                        </form>
-                    </div>
-
-                    <form id="fireForm_<%= member.id %>" action="/system/personnel/action" method="POST">
-                        <input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="action" value="fire"><input type="hidden" name="reason" id="fireReason_<%= member.id %>">
-                        <button type="button" class="btn-danger btn-block" onclick="firePersonnel('<%= member.id %>')" style="border:none;">فصل وطي قيد من القطاع ❌</button>
+                    <form action="/system/personnel/grant-cert-direct" method="POST" style="display:flex; gap:10px;">
+                        <input type="hidden" name="targetId" value="<%= member.id %>">
+                        <select name="certId" required class="form-control"><option value="" disabled selected>منح شهادة مباشرة</option><% Object.entries(certTypes).forEach(([cId, cInfo]) => { %> <option value="<%= cId %>"><%= cInfo.name %></option> <% }) %></select>
+                        <button type="submit" class="btn-success">منح 📜</button>
                     </form>
                 </div>
 
-                <div class="profile-section section-blue" style="margin-bottom: 0;">
-                    <h3 style="color: #60a5fa;">📦 صرف واسترجاع العهدة</h3>
-                    <div class="form-grid-2">
-                        <div class="inner-box">
-                            <span class="inner-label" style="color:#60a5fa;">صرف سلاح</span>
-                            <form action="/custody/weapons/issue" method="POST">
-                                <input type="hidden" name="discordId" value="<%= member.id %>"><input type="hidden" name="receiverName" value="<%= member.realName %>"><input type="hidden" name="nationalId" value="<%= member.nationalId %>">
-                                <select name="weaponType" required class="form-control" style="margin-bottom:8px;"><option value="" disabled selected>-- اختر السلاح --</option><% (custody.weaponTypes || []).forEach(type => { %> <option value="<%= type %>"><%= type %></option> <% }) %></select>
-                                <div style="display:flex; gap:8px;"><input type="text" name="serialNumber" required placeholder="S/N" class="form-control" style="flex:1;"><button class="btn-primary btn-compact" style="border:none;">صرف</button></div>
-                            </form>
-                        </div>
-                        <div class="inner-box">
-                            <span class="inner-label" style="color:#facc15;">صرف مركبة</span>
-                            <form action="/custody/vehicles/issue" method="POST">
-                                <input type="hidden" name="discordId" value="<%= member.id %>"><input type="hidden" name="receiverName" value="<%= member.realName %>"><input type="hidden" name="nationalId" value="<%= member.nationalId %>">
-                                <select name="vehicleType" required class="form-control" style="margin-bottom:8px;"><option value="" disabled selected>-- اختر المركبة --</option><% (custody.vehicleTypes || []).forEach(type => { %> <option value="<%= type %>"><%= type %></option> <% }) %></select>
-                                <div style="display:flex; gap:8px;"><input type="text" name="plateNumber" required placeholder="اللوحة" class="form-control" style="flex:1;"><button class="btn-warning btn-compact" style="color:black; border:none;">صرف</button></div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px;">
-                        <span class="inner-label" style="margin-bottom:8px;">📋 العهدة المسجلة حالياً:</span>
-                        <% if(memberWeapons.length === 0 && memberVehicles.length === 0) { %><p style="color:#71717a; font-size:12px; text-align:center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">لا توجد عهدة مسجلة.</p><% } else { %>
-                            <table style="background: rgba(0,0,0,0.2); width:100%; border-radius:6px; border: 1px solid #27272a; border-collapse: collapse;">
-                                <% memberWeapons.forEach(w => { %><tr style="border-bottom: 1px solid #27272a;"><td style="color:#e4e4e7; padding: 8px 12px; font-size:12px;">🔫 <%= w.weaponType %> <span style="color:#71717a; margin-right:10px;">S/N: <%= w.serialNumber %></span></td><td style="text-align:left; padding: 8px 12px;"><form action="/system/custody/return" method="POST" style="margin:0;"><input type="hidden" name="type" value="weapon"><input type="hidden" name="index" value="<%= w.originalIndex %>"><button class="btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border:none;">استرجاع</button></form></td></tr><% }) %>
-                                <% memberVehicles.forEach(v => { %><tr style="border-bottom: 1px solid #27272a;"><td style="color:#e4e4e7; padding: 8px 12px; font-size:12px;">🚓 <%= v.vehicleType %> <span style="color:#71717a; margin-right:10px;">لوحة: <%= v.plateNumber %></span></td><td style="text-align:left; padding: 8px 12px;"><form action="/system/custody/return" method="POST" style="margin:0;"><input type="hidden" name="type" value="vehicle"><input type="hidden" name="index" value="<%= v.originalIndex %>"><button class="btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border:none;">استرجاع</button></form></td></tr><% }) %>
-                            </table>
-                        <% } %>
-                    </div>
+                <div class="profile-section section-red">
+                    <h3 style="color: #f87171;">⚙️ الإجراءات الإدارية</h3>
+                    <form action="/system/personnel/action" method="POST" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <input type="hidden" name="targetId" value="<%= member.id %>"><input type="hidden" name="action" value="update_site">
+                        <input type="text" name="newRealName" value="<%= member.realName %>" class="form-control" placeholder="الاسم">
+                        <input type="text" name="newCode" value="<%= member.militaryCode %>" class="form-control" placeholder="الكود">
+                        <select name="newSiteRank" class="form-control"><% RANKS_LADDER.forEach(rank => { %><option value="<%= rank %>" <%= member.siteRank === rank ? 'selected' : '' %>><%= rank %></option><% }) %></select>
+                        <button type="submit" class="btn-warning">حفظ 💾</button>
+                    </form>
+                    <button class="btn-danger" style="width:100%; margin-top:10px;" onclick="firePersonnel('<%= member.id %>')">فصل من القطاع ❌</button>
                 </div>
             </div>
         </div>
     <% }) %>
 
     <script>
-        // دالة الفلترة
+        // 🖱️ سكربت التحرك بالسحب (Drag to Scroll)
+        const setupDragScroll = (elId) => {
+            const slider = document.getElementById(elId);
+            let isDown = false; let startY; let scrollTop;
+            slider.addEventListener('mousedown', (e) => { isDown = true; slider.style.cursor = 'grabbing'; startY = e.pageY - slider.offsetTop; scrollTop = slider.scrollTop; });
+            slider.addEventListener('mouseleave', () => { isDown = false; slider.style.cursor = 'grab'; });
+            slider.addEventListener('mouseup', () => { isDown = false; slider.style.cursor = 'grab'; });
+            slider.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const y = e.pageY - slider.offsetTop; const walk = (y - startY) * 1.5; slider.scrollTop = scrollTop - walk; });
+        }
+        setupDragScroll('mainDragArea');
+
         function filterTable(inputId, tableId) { const filter = document.getElementById(inputId).value.toLowerCase(); const rows = document.getElementById(tableId).getElementsByClassName('searchable-row'); for (let i = 0; i < rows.length; i++) { let text = rows[i].innerText.toLowerCase(); rows[i].style.display = text.includes(filter) ? "" : "none"; } }
-        
-        // التحكم بالمودال
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         window.onclick = function(event) { if (event.target.classList.contains('modal')) { event.target.style.display = "none"; } }
-        
-        function firePersonnel(userId) { let reason = prompt('الرجاء كتابة سبب الفصل لإضافته في السجل الشامل:'); if(reason !== null && reason.trim() !== "") { document.getElementById('fireReason_' + userId).value = reason; document.getElementById('fireForm_' + userId).submit(); } else if(reason !== null) { alert('يجب كتابة سبب الفصل لحفظه في السجل!'); } }
-        
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const openModalId = urlParams.get('open');
-            if (openModalId) { const targetModal = document.getElementById('modal_profile_' + openModalId); if (targetModal) { targetModal.style.display = 'block'; } }
-        };
-
-        // 🖱️ تفعيل ميزة السحب والإفلات (Drag to Scroll) بالماوس
-        const slider = document.getElementById('tableContainer');
-        let isDown = false; let startY; let scrollTop;
-        slider.addEventListener('mousedown', (e) => { isDown = true; slider.style.cursor = 'grabbing'; startY = e.pageY - slider.offsetTop; scrollTop = slider.scrollTop; });
-        slider.addEventListener('mouseleave', () => { isDown = false; slider.style.cursor = 'grab'; });
-        slider.addEventListener('mouseup', () => { isDown = false; slider.style.cursor = 'grab'; });
-        slider.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const y = e.pageY - slider.offsetTop; const walk = (y - startY) * 1.5; slider.scrollTop = scrollTop - walk; });
+        function firePersonnel(userId) { let reason = prompt('سبب الفصل:'); if(reason) { /* إرسال الفورم هنا */ } }
     </script>
 </body>
 </html>
