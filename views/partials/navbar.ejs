@@ -3,22 +3,37 @@
     <div class="nav-links">
         <a href="/">الرئيسية</a>
         <a href="/public-rules">قوانين المواطنين</a>
-        <% if (!user || !user.perms.isPolice) { %> <a href="/jobs" style="color: #2ecc71;">التقديم للشرطة</a> <% } %>
+        
+        <% if (!user || !user.perms.isPolice) { %> 
+            <a href="/jobs" style="color: #2ecc71;">التقديم للشرطة</a> 
+        <% } %>
+
         <% if (user && user.perms.isPolice) { %>
-            <a href="/police-rules">قوانين العسكر</a> <a href="/armory">العهدة العسكرية</a> <a href="/certificates">الشهادات والرخص</a>
+            <a href="/police-rules">قوانين العسكر</a> 
+            <a href="/armory">العهدة العسكرية</a> 
+            <a href="/certificates">الشهادات والرخص</a>
+        <% } %>
+
         <% if (user && (user.perms.isTrainer || user.perms.isOfficer || user.perms.isAcademyManager)) { %> 
             <a href="/admin" style="color: #f1c40f;">التقديمات</a> 
             <a href="/academy" style="color: #3498DB;">الأكاديمية العسكرية</a> 
         <% } %>
+
         <% if (user && (user.perms.isOfficer || user.perms.isCertManager)) { %> 
             <a href="/system/certificates" style="color: #2ecc71;">إدارة الشهادات</a> 
         <% } %>
-        <% if (user && user.perms.isOfficer) { %> <a href="/system" style="color: #e74c3c; font-weight: bold;">إدارة نظام الشرطة</a> <% } %>
+
+        <% if (user && user.perms.isOfficer) { %> 
+            <a href="/system" style="color: #e74c3c; font-weight: bold;">إدارة النظام</a> 
+        <% } %>
     </div>
+    
     <div>
         <% if (user) { %>
             <span style="color:#4CAF50; font-weight:bold; font-size: 14px;">
-                <% if (user.perms.isPolice) { %> [ <%= user.perms.isOfficer ? 'ضابط' : (user.perms.isNCO ? 'ضابط صف' : 'فرد') %> | <%= user.customRank %> ] <% } %>
+                <% if (user.perms.isPolice) { %> 
+                    [ <%= user.perms.isOfficer ? 'ضابط' : (user.perms.isAcademyManager ? 'إدارة أكاديمية' : (user.perms.isTrainer ? 'مدرب' : (user.perms.isNCO ? 'ضابط صف' : 'فرد'))) %> | <%= user.customRank %> ] 
+                <% } %>
                 <%= user.username %>
             </span> | <a href="/logout" style="color:#ff4747; text-decoration:none;">خروج</a>
         <% } else { %>
@@ -29,19 +44,31 @@
 
 <div class="toast-container" id="toast-container">
     <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-        <% notifications.forEach(notif => { %><div class="toast <%= notif.type %>"><%= notif.message %></div><% }) %>
+        <% notifications.forEach(notif => { %>
+            <div class="toast <%= notif.type %>"><%= notif.message %></div>
+        <% }) %>
     <% } %>
 </div>
 
 <script>
+    // تم تصحيح هذا الجزء لمنع خطأ الـ catch
     function showCustomToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
+        if (!container) return;
         const toast = document.createElement('div');
-        toast.className = `toast ${type}`; toast.innerText = msg;
+        toast.className = `toast ${type}`; 
+        toast.innerText = msg;
         container.appendChild(toast);
-        setTimeout(() => { toast.style.animation = 'slideOut 0.5s forwards'; setTimeout(() => toast.remove(), 500); }, 5000);
+        setTimeout(() => { 
+            toast.style.animation = 'slideOut 0.5s forwards'; 
+            setTimeout(() => toast.remove(), 500); 
+        }, 5000);
     }
+
     document.querySelectorAll('.toast').forEach(t => {
-        setTimeout(() => { t.style.animation = 'slideOut 0.5s forwards'; setTimeout(() => t.remove(), 500); }, 8000);
+        setTimeout(() => { 
+            t.style.animation = 'slideOut 0.5s forwards'; 
+            setTimeout(() => t.remove(), 500); 
+        }, 8000);
     });
 </script>
