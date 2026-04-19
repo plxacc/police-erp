@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>الرئيسية - الشرطة</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css?v=9">
 </head>
 <body>
-    <% if (!user) { %>
-    <script>
-        // إظهار تنبيه للمستخدم غير المسجل دخول
-        // يمكنك استخدام alert أو تصميم modal مخصص
-        window.onload = function() {
-            alert("مرحباً بك! يرجى تسجيل الدخول عبر ديسكورد للوصول إلى كامل صلاحيات النظام العسكري.");
-        };
-    </script>
-<% } %>
     <%- include('partials/navbar') %>
 
-    <div style="text-align:center; padding-top:100px;">
-        <h1 style="font-size:50px; color: #ffffff;">بوابة الشرطة</h1>
-        <p style="font-size:20px; color:#949ba4;">
-        </p>
+    <div class="container fade-in" style="text-align:center; padding-top:100px;">
+        <h1 style="font-size:50px; color:#ffffff;">بوابة الشرطة</h1>
+        <p style="font-size:20px; color:#949ba4;"></p>
     </div>
+
+    <% if (!user) { %>
+        <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); border:1px solid rgba(255,255,255,0.12); color:#fff; padding:12px 18px; border-radius:12px; z-index:9999; font-size:14px; font-weight:700;">
+            قم بتسجيل الدخول للوصول إلى خدمات الموقع
+            <a href="/login" style="color:#7cc7ff; margin-right:10px; text-decoration:none;">تسجيل الدخول</a>
+        </div>
+    <% } %>
 </body>
 </html>
