@@ -34,7 +34,7 @@ body {
         linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
     background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-    background-attachment: fixed;
+    background-attachment: scroll;
     color: var(--text-main);
     font-family: 'Cairo', sans-serif;
     direction: rtl;
@@ -51,10 +51,10 @@ body::before {
     width: 100vw; 
     height: 100vh;
     background-image: url('/logo.png');
-    background-size: cover;
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center 55px; 
-    opacity: 0.35;
+    opacity: 0.14;
     z-index: -1;
     pointer-events: none;
     /* إضافة تمويه خفيف للشعار الخلفي لزيادة التركيز على الصناديق */
@@ -66,14 +66,14 @@ body::before {
    ========================================= */
 .navbar {
     background: rgba(5, 7, 12, 0.75);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    padding: 15px 50px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--glass-border-strong);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -124,14 +124,14 @@ body::before {
 /* توحيد كل الصناديق بنفس ستايل الزجاج الفخم */
 .card, .app-card, .profile-section, .hub-card {
     background: linear-gradient(145deg, rgba(15, 20, 30, 0.75), rgba(5, 8, 15, 0.85));
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     border-top: 3px solid var(--primary); /* الخط المضيء العلوي */
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 25px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;

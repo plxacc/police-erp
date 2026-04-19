@@ -4,10 +4,13 @@ const axios = require('axios');
 const session = require('express-session');
 const db = require('./database/db'); 
 const { Client, GatewayIntentBits, EmbedBuilder, Events } = require('discord.js');
+const compression = require('compression');
 
 const app = express();
+app.disable('x-powered-by');
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
+app.use(compression());
+app.use(express.static('public', { maxAge: '7d' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'police_erp_cloud_v1', resave: false, saveUninitialized: true }));
 
@@ -16,7 +19,6 @@ client.login(process.env.BOT_TOKEN);
 client.once(Events.ClientReady, async c => {
     console.log(`✅ النظام العسكري المطور V2 مفعل ومتصل بالديسكورد: ${c.user.tag}`);
     const guild = client.guilds.cache.get(process.env.GUILD_ID);
-    if(guild) await guild.members.fetch().catch(console.error); 
 });
 
 const RANKS_LADDER = ["مستجد", "جندي", "جندي أول", "عريف", "وكيل رقيب", "رقيب", "رقيب أول", "رئيس رقباء", "ملازم", "ملازم أول", "نقيب", "رائد", "مقدم", "عقيد", "عميد", "لواء", "فريق", "فريق أول"];
@@ -83,7 +85,7 @@ async function globalLog(userId, logData) {
         const channel = client.channels.cache.get(process.env.LOG_CHANNEL_ID);
         if (channel) {
             let color = 0x808080; let title = "📄 سجل العمليات";
-            if (logData.type === 'enlist' || logData.type === 'pre_accept') { color = 0x2ECC71; title = "✅ " + logData.title; }
+            if (logData.type === 'enlist' || logData.type === 'enlistment' || logData.type === 'pre_accept') { color = 0x2ECC71; title = "✅ " + logData.title; }
             else if (logData.type === 'fail_training' || logData.type === 'reject' || logData.type === 'cert_revoked') { color = 0xE74C3C; title = "❌ " + logData.title; }
             else if (logData.type === 'fire') { color = 0x992D22; title = "⚠️ " + logData.title; }
             else if (logData.type === 'promotion') { color = 0xF1C40F; title = "📈 " + logData.title; }
@@ -97,7 +99,7 @@ async function globalLog(userId, logData) {
                     { name: "المسؤول", value: logData.actionBy, inline: true }, 
                     { name: "التفاصيل", value: logData.details, inline: false }
                 )
-                .setFooter({ text: `الرقم الوطني: ${logData.nationalId || 'غير مسجل'} | كود: ${logData.militaryCode || 'بدون'}` })
+                .setFooter({ text: `الرقم الوطني: ${logData.nationalId || 'غير مسجل'}` })
                 .setTimestamp();
             channel.send({ embeds: [embed] }).catch(()=>{});
         }
@@ -117,47 +119,84 @@ async function hasPermission(user, permKey) {
 }
 
 app.use(async (req, res, next) => {
-    if (req.session.user) {
-        const notifsDB = await db.get('notifications', {}); 
-        res.locals.notifications = notifsDB[req.session.user.id] || [];
-        if (res.locals.notifications.length > 0) {
-            await db.clearNotifications(req.session.user.id);
-        }
-        
-        req.session.user.perms = { isActivated: false, isEnlisted: false, isNCO: false, isOfficer: false, isPolice: false };
-        try {
-            const guild = client.guilds.cache.get(process.env.GUILD_ID);
-            if(guild) {
-                const member = guild.members.cache.get(req.session.user.id);
-                if(member) {
-                    req.session.user.perms.isActivated = member.roles.cache.has(process.env.REQUIRED_ROLE_ID);
-                    req.session.user.perms.isEnlisted = member.roles.cache.has(process.env.ENLISTED_ROLE_ID);
-                    req.session.user.perms.isNCO = member.roles.cache.has(process.env.NCO_ROLE_ID);
-                    req.session.user.perms.isOfficer = member.roles.cache.has(process.env.OFFICERS_ROLE_ID);
-                    req.session.user.perms.isTrainer = member.roles.cache.has(process.env.TRAINER_ROLE_ID);
-                    req.session.user.perms.isAcademyManager = member.roles.cache.has(process.env.ACADEMY_MANAGER_ROLE_ID);
-                    req.session.user.perms.isCertManager = member.roles.cache.has(process.env.CERT_MANAGER_ROLE_ID);
-                    req.session.user.perms.isPolice = req.session.user.perms.isEnlisted || req.session.user.perms.isNCO || req.session.user.perms.isOfficer || req.session.user.perms.isTrainer || req.session.user.perms.isAcademyManager || req.session.user.perms.isCertManager;
-                }
-            }
-            if (req.session.user.perms.isPolice) {
-                const personnelDB = await db.get('personnel', {});
-                if (!personnelDB[req.session.user.id]) { 
-                    personnelDB[req.session.user.id] = { 
-                        rank: "مستجد", certs: [], delegatedPerms: [], 
-                        nationalId: "غير مسجل", realName: req.session.user.username,
-                        militaryCode: "0000", joinDate: new Date().toLocaleString('ar-SA'), lastLogin: new Date().toLocaleString('ar-SA')
-                    }; 
-                } else {
-                    personnelDB[req.session.user.id].lastLogin = new Date().toLocaleString('ar-SA');
-                }
-                await db.save('personnel', personnelDB); 
-                req.session.user.customRank = personnelDB[req.session.user.id].rank;
-                req.session.user.delegatedPerms = personnelDB[req.session.user.id].delegatedPerms || [];
-            }
-        } catch(e) {}
-    } else { res.locals.notifications = []; }
-    next();
+  try {
+    // افتراضيًا: لا إشعارات
+    res.locals.notifications = [];
+
+    // إذا ما فيه مستخدم مسجل دخول
+    if (!req.session.user) return next();
+
+    // تحميل الإشعارات
+    const notifsDB = await db.get('notifications', {});
+    res.locals.notifications = notifsDB[req.session.user.id] || [];
+    if (res.locals.notifications.length > 0) {
+      await db.clearNotifications(req.session.user.id);
+    }
+
+    // بناء الصلاحيات
+    req.session.user.perms = {
+      isActivated: false,
+      isEnlisted: false,
+      isNCO: false,
+      isOfficer: false,
+      isTrainer: false,
+      isAcademyManager: false,
+      isCertManager: false,
+      isPolice: false
+    };
+
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    if (guild) {
+      // ✅ مهم: لازم let عشان نقدر نسوي fetch لو مو موجود بالكاش
+      let member = guild.members.cache.get(req.session.user.id);
+      if (!member) member = await guild.members.fetch(req.session.user.id).catch(() => null);
+
+      if (member) {
+        req.session.user.perms.isActivated = member.roles.cache.has(process.env.REQUIRED_ROLE_ID);
+        req.session.user.perms.isEnlisted = member.roles.cache.has(process.env.ENLISTED_ROLE_ID);
+        req.session.user.perms.isNCO = member.roles.cache.has(process.env.NCO_ROLE_ID);
+        req.session.user.perms.isOfficer = member.roles.cache.has(process.env.OFFICERS_ROLE_ID);
+        req.session.user.perms.isTrainer = member.roles.cache.has(process.env.TRAINER_ROLE_ID);
+        req.session.user.perms.isAcademyManager = member.roles.cache.has(process.env.ACADEMY_MANAGER_ROLE_ID);
+        req.session.user.perms.isCertManager = member.roles.cache.has(process.env.CERT_MANAGER_ROLE_ID);
+
+        req.session.user.perms.isPolice =
+          req.session.user.perms.isEnlisted ||
+          req.session.user.perms.isNCO ||
+          req.session.user.perms.isOfficer ||
+          req.session.user.perms.isTrainer ||
+          req.session.user.perms.isAcademyManager ||
+          req.session.user.perms.isCertManager;
+      }
+    }
+
+    // إذا هو من الشرطة: جهّز/حدّث بياناته في personnel
+    if (req.session.user.perms.isPolice) {
+      const personnelDB = await db.get('personnel', {});
+      if (!personnelDB[req.session.user.id]) {
+        personnelDB[req.session.user.id] = {
+          rank: "مستجد",
+          certs: [],
+          delegatedPerms: [],
+          nationalId: "غير مسجل",
+          realName: req.session.user.username,
+          joinDate: new Date().toLocaleString('ar-SA'),
+          lastLogin: new Date().toLocaleString('ar-SA')
+        };
+      } else {
+        personnelDB[req.session.user.id].lastLogin = new Date().toLocaleString('ar-SA');
+      }
+
+      await db.save('personnel', personnelDB);
+      req.session.user.customRank = personnelDB[req.session.user.id].rank;
+      req.session.user.delegatedPerms = personnelDB[req.session.user.id].delegatedPerms || [];
+    }
+
+    return next();
+  } catch (e) {
+    // إذا صار أي خطأ: لا توقف الموقع، كمّل
+    return next();
+  }
 });
 
 // ==========================================
@@ -245,16 +284,21 @@ app.post('/submit', async (req, res) => {
         },
         answers: answersData,
         grades: null
-    }; 
+   };
     await db.save('apps', appsDB); 
     
     await globalLog(req.session.user.id, { type: 'app_submit', title: 'تقديم جديد', username: req.session.user.username, nationalId: req.body.nationalId, actionBy: 'النظام', details: `تم استلام طلب تجنيد جديد` });
 
-    const guild = client.guilds.cache.get(process.env.GUILD_ID); 
-    const member = guild.members.cache.get(req.session.user.id); 
-    if(member) await member.roles.add(process.env.APPLIED_ROLE_ID).catch(()=>{}); 
-    res.redirect('/jobs'); 
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+  if (guild) {
+  let member = guild.members.cache.get(req.session.user.id);
+  if (!member) member = await guild.members.fetch(req.session.user.id).catch(() => null);
+  if (member) await member.roles.add(process.env.APPLIED_ROLE_ID).catch(() => {});
+}
+res.redirect('/jobs');
+
 });
+
 
 app.get('/admin', async (req, res) => { 
     if (!req.session.user || !(req.session.user.perms.isOfficer || req.session.user.perms.isTrainer || req.session.user.perms.isAcademyManager)) return res.redirect('/');
@@ -311,31 +355,58 @@ app.post('/admin/action', async (req, res) => {
 });
 
 app.post('/admin/grade', async (req, res) => {
-    if (!await hasPermission(req.session.user, 'RECORD_GRADES')) return res.redirect('/academy');
-    const { userId, stops, ops, neg, general, att } = req.body; 
-    const appsDB = await db.get('apps', {}); 
-    const targetData = appsDB[userId];
-    
-    if(targetData && targetData.status === 'academy') {
-        let g = targetData.grades || {};
-        const canOverride = req.session.user.perms.isOfficer || req.session.user.perms.isAcademyManager;
-        const graderName = req.session.user.username;
-        const graderId = req.session.user.id;
+  if (!await hasPermission(req.session.user, 'RECORD_GRADES')) return res.redirect('/academy');
 
-        if (stops !== '' && stops !== g.stops?.value && (!g.stops?.value || isOfficer)) g.stops = { value: stops, grader: graderName, graderId: graderId };
-        if (ops !== '' && ops !== g.ops?.value && (!g.ops?.value || isOfficer)) g.ops = { value: ops, grader: graderName, graderId: graderId };
-        if (neg !== '' && neg !== g.neg?.value && (!g.neg?.value || isOfficer)) g.neg = { value: neg, grader: graderName, graderId: graderId };
-        if (general !== '' && general !== g.general?.value && (!g.general?.value || isOfficer)) g.general = { value: general, grader: graderName, graderId: graderId };
-        if (att !== '' && att !== g.att?.value && (!g.att?.value || isOfficer)) g.att = { value: att, grader: graderName, graderId: graderId };
+  const { userId, stops, ops, neg, general, att } = req.body;
+  const appsDB = await db.get('apps', {});
+  const targetData = appsDB[userId];
 
-        const total = (Number(g.stops?.value)||0) + (Number(g.ops?.value)||0) + (Number(g.neg?.value)||0) + (Number(g.general?.value)||0) + (Number(g.att?.value)||0);
-        g.total = total; g.date = new Date().toLocaleString('ar-SA');
-        
-        targetData.grades = g;
-        await db.save('apps', appsDB);
-        await globalLog(userId, { type: 'academy_grades', title: 'تحديث درجات الأكاديمية', username: targetData.username, nationalId: targetData.personalInfo?.nationalId, actionBy: req.session.user.username, details: `تم تحديث درجة الدورة لتصبح: ${total}/75` });
+  if (targetData && targetData.status === 'academy') {
+    let g = targetData.grades || {};
+    const canOverride = req.session.user.perms.isOfficer || req.session.user.perms.isAcademyManager;
+    const graderName = req.session.user.username;
+    const graderId = req.session.user.id;
+
+    if (stops !== '' && stops !== g.stops?.value && (!g.stops?.value || canOverride)) {
+      g.stops = { value: stops, grader: graderName, graderId };
     }
-    res.redirect('/academy');
+    if (ops !== '' && ops !== g.ops?.value && (!g.ops?.value || canOverride)) {
+      g.ops = { value: ops, grader: graderName, graderId };
+    }
+    if (neg !== '' && neg !== g.neg?.value && (!g.neg?.value || canOverride)) {
+      g.neg = { value: neg, grader: graderName, graderId };
+    }
+    if (general !== '' && general !== g.general?.value && (!g.general?.value || canOverride)) {
+      g.general = { value: general, grader: graderName, graderId };
+    }
+    if (att !== '' && att !== g.att?.value && (!g.att?.value || canOverride)) {
+      g.att = { value: att, grader: graderName, graderId };
+    }
+
+    const total =
+      (Number(g.stops?.value) || 0) +
+      (Number(g.ops?.value) || 0) +
+      (Number(g.neg?.value) || 0) +
+      (Number(g.general?.value) || 0) +
+      (Number(g.att?.value) || 0);
+
+    g.total = total;
+    g.date = new Date().toLocaleString('ar-SA');
+
+    targetData.grades = g;
+    await db.save('apps', appsDB);
+
+    await globalLog(userId, {
+      type: 'academy_grades',
+      title: 'تحديث درجات الأكاديمية',
+      username: targetData.username,
+      nationalId: targetData.personalInfo?.nationalId,
+      actionBy: req.session.user.username,
+      details: `تم تحديث درجة الدورة لتصبح: ${total}/75`
+    });
+  }
+
+  res.redirect('/academy');
 });
 
 app.post('/admin/enlist', async (req, res) => {
@@ -367,17 +438,17 @@ app.post('/admin/enlist', async (req, res) => {
             await member.setNickname(newName).catch(e => console.log("خطأ في تغيير الاسم:", e));
         }
 
-        // حفظ العسكري في السجل بدون كود
         personnelDB[userId] = {
-            id: userId,
-            realName: targetData.personalInfo?.realName,
-            username: targetData.username,
-            nationalId: targetData.personalInfo?.nationalId,
-            siteRank: 'جندي',
-            discordRank: 'أفراد',
-            joinDate: new Date().toLocaleDateString('ar-SA'),
-            certs: []
-        };
+          id: userId,
+          realName: targetData.personalInfo?.realName || targetData.username,
+          username: targetData.username,
+          nationalId: targetData.personalInfo?.nationalId || 'غير مسجل',
+          rank: 'جندي',
+          certs: [],
+          delegatedPerms: [],
+          joinDate: new Date().toLocaleDateString('ar-SA'),
+          lastLogin: new Date().toLocaleString('ar-SA')
+    };
 
         delete appsDB[userId];
         await db.save('apps', appsDB);
@@ -598,8 +669,16 @@ app.get('/system/personnel', async (req, res) => {
         let dRank = "أفراد"; 
         if(m.roles.cache.has(process.env.OFFICERS_ROLE_ID)) dRank = "ضباط"; 
         else if(m.roles.cache.has(process.env.NCO_ROLE_ID)) dRank = "ضباط صف"; 
-        const dbData = personnelDB[m.id] || { rank: "مستجد", certs: [], delegatedPerms: [], nationalId: "غير مسجل", realName: m.user.username, militaryCode: "", joinDate: "", lastLogin: "" };
-        return { id: m.id, username: m.user.username, discordRank: dRank, siteRank: dbData.rank, certs: dbData.certs || [], delegatedPerms: dbData.delegatedPerms || [], nationalId: dbData.nationalId, realName: dbData.realName, militaryCode: dbData.militaryCode, joinDate: dbData.joinDate, lastLogin: dbData.lastLogin }; 
+        const dbData = personnelDB[m.id] || {
+    rank: "مستجد", 
+    certs: [], 
+    delegatedPerms: [], 
+    nationalId: "غير مسجل", 
+    realName: m.user.username, 
+    joinDate: "", 
+    lastLogin: "" 
+   };
+        return { id: m.id, username: m.user.username, discordRank: dRank, siteRank: dbData.rank, certs: dbData.certs || [], delegatedPerms: dbData.delegatedPerms || [], nationalId: dbData.nationalId, realName: dbData.realName, joinDate: dbData.joinDate, lastLogin: dbData.lastLogin }; 
     });
     
     res.render('personnel', { user: req.session.user, list, RANKS_LADDER, custody, certTypes: CERT_TYPES, PERMISSIONS_LIST });
@@ -620,17 +699,7 @@ app.post('/system/personnel/action', async (req, res) => {
         await globalLog(targetId, { type: 'fire', title: 'فصل وطي قيد', username: targetData.realName, nationalId: targetData.nationalId, militaryCode: targetData.militaryCode, actionBy: req.session.user.username, details: `السبب: ${reason}` }); 
         await db.addNotification(targetId, `⚠️ تم فصلك.`, 'danger'); 
     }
-     else if (action === 'update_code') { 
-        if (personnelDB[targetId]) {
-            const oldCode = personnelDB[targetId].militaryCode;
-            personnelDB[targetId].militaryCode = req.body.newCode;
-            await globalLog(targetId, { type: 'promotion', title: 'تحديث الكود العسكري', username: targetData.realName, nationalId: targetData.nationalId, militaryCode: req.body.newCode, actionBy: req.session.user.username, details: `تغيير الكود من ${oldCode || 'بدون'} إلى ${req.body.newCode}` }); 
-            await db.addNotification(targetId, `🔄 تم تحديث الكود العسكري إلى ${req.body.newCode}`, 'success');
-            
-            await globalLog(targetId, { type: 'promotion', title: 'تحديث فئة ديسكورد', username: targetData.realName, nationalId: targetData.nationalId, militaryCode: targetData.militaryCode, actionBy: req.session.user.username, details: `تحديث الفئة إلى: ${newDiscordRole}` }); 
-            await db.addNotification(targetId, '🔄 تم تحديث فئة الديسكورد.', 'info'); 
-        } 
-    }
+
     else if (action === 'update_site') { 
         if (!personnelDB[targetId]) personnelDB[targetId] = { rank: "مستجد", certs:[], delegatedPerms: [], nationalId: newNationalId, realName: newRealName }; 
         const oldRank = personnelDB[targetId].rank;
