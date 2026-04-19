@@ -585,24 +585,28 @@ app.post('/system/questions/delete', async (req, res) => {
     res.redirect('/system/questions'); 
 });
 
-app.get('/system/personnel', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const guild = client.guilds.cache.get(process.env.GUILD_ID); const members = guild.members.cache;
-    const policeMembers = members.filter(m => m.roles.cache.has(process.env.ENLISTED_ROLE_ID) || m.roles.cache.has(process.env.NCO_ROLE_ID) || m.roles.cache.has(process.env.OFFICERS_ROLE_ID));
+app.get('/system/personnel/:id', async (req, res) => {
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/system');
     
+    const targetId = req.params.id;
     const personnelDB = await db.get('personnel', {});
-    const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
-    if(!custody.vehicleTypes) custody.vehicleTypes = [];
+    const member = personnelDB[targetId];
     
-    const list = policeMembers.map(m => { 
-        let dRank = "أفراد"; 
-        if(m.roles.cache.has(process.env.OFFICERS_ROLE_ID)) dRank = "ضباط"; 
-        else if(m.roles.cache.has(process.env.NCO_ROLE_ID)) dRank = "ضباط صف"; 
-        const dbData = personnelDB[m.id] || { rank: "مستجد", certs: [], delegatedPerms: [], nationalId: "غير مسجل", realName: m.user.username, militaryCode: "", joinDate: "", lastLogin: "" };
-        return { id: m.id, username: m.user.username, discordRank: dRank, siteRank: dbData.rank, certs: dbData.certs || [], delegatedPerms: dbData.delegatedPerms || [], nationalId: dbData.nationalId, realName: dbData.realName, militaryCode: dbData.militaryCode, joinDate: dbData.joinDate, lastLogin: dbData.lastLogin }; 
+    if(!member) return res.redirect('/system/personnel'); // إذا العسكري مو موجود يرجعه للجدول
+
+    const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [], weaponLogs: [], vehicleLogs: [] });
+    const certTypes = await db.get('certTypes', {});
+    
+    // سلم الرتب (تأكد أنه يطابق اللي عندك)
+    const RANKS_LADDER = ['جندي', 'جندي أول', 'عريف', 'وكيل رقيب', 'رقيب', 'رقيب أول', 'رئيس رقباء', 'ملازم', 'ملازم أول', 'نقيب', 'رائد', 'مقدم', 'عقيد', 'عميد', 'لواء'];
+
+    res.render('profile', {
+        user: req.session.user,
+        member: member,
+        custody: custody,
+        certTypes: certTypes,
+        RANKS_LADDER: RANKS_LADDER
     });
-    
-    res.render('personnel', { user: req.session.user, list, RANKS_LADDER, custody, certTypes: CERT_TYPES, PERMISSIONS_LIST });
 });
 
 app.post('/system/personnel/action', async (req, res) => {
