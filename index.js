@@ -10,6 +10,12 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'police_erp_cloud_v1', resave: false, saveUninitialized: true }));
+app.use((req, res, next) => {
+    // هذا السطر يسمح لفايف إم إنها تعرض موقعك داخل اللعبة
+    res.setHeader("Content-Security-Policy", "frame-ancestors *");
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    next();
+});
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 client.login(process.env.BOT_TOKEN);
