@@ -1,73 +1,74 @@
 <div class="navbar">
-  <h2>القيادة العامة للشرطة</h-rules" class="nav-link-main">قوانين المواطنين</a>  <h2>القيادة العامة للشرطة</h2>
-
-    <% if (!user) { %>
-      <a href="/login" class="nav-link-action">التقديم للشرطة</a>
-    <% } else if (!user.perms.isPolice) { %>
-      <a href="/jobs" class="nav-link-action">التقديم للشرطة</a>
-    <% } %>
-
-    <% if (user && user.perms.isPolice) { %>
-      <a href="/police-rules" class="nav-link-main">قوانين العسكر</a>
-      <a href="/armory" class="nav-link-main">العهدة العسكرية</a>
-      <a href="/certificates" class="nav-link-main">الشهادات والرخص</a>
-    <% } %>
-
-    <% if (user && (user.perms.isTrainer || user.perms.isOfficer || user.perms.isAcademyManager)) { %>
-      <a href="/admin" class="nav-link-warn">التقديمات</a>
-      <a href="/academy" class="nav-link-info">الأكاديمية العسكرية</a>
-    <% } %>
-
-    <% if (user && (user.perms.isOfficer || user.perms.isCertManager)) { %>
-      <a href="/system/certificates" class="nav-link-success">إدارة الشهادات</a>
-    <% } %>
-
-    <% if (user && user.perms.isOfficer) { %>
-      <a href="/system" class="nav-link-danger">إدارة النظام</a>
-    <% } %>
-  </div>
-
-  <div class="user-box">
-    <% if (user) { %>
-      <a href="/system/personnel/<%= user.id %>" class="user-card">
-        <div class="user-name"><%= user.realName || user.username %></div>
-
-        <% if (user.perms.isPolice) { %>
-          <div class="user-rank">
-            <%= user.customRank %> •
-            <%= user.perms.isOfficer ? 'ضابط' :
-                user.perms.isAcademyManager ? 'إدارة أكاديمية' :
-                user.perms.isTrainer ? 'مدرب' :
-                user.perms.isNCO ? 'ضابط صف' : 'فرد' %>
-          </div>
-        <% } else { %>
-          <div class="user-rank"><%= user.perms.isActivated ? 'مفعل' : 'غير مفعل' %></div>
+    <h2>القيادة العامة للشرطة</h2>
+    <div class="nav-links">
+        <a href="/">الرئيسية</a>
+        <a href="/public-rules">قوانين المواطنين</a>
+        
+        <% if (!user || !user.perms.isPolice) { %> 
+            <a href="/jobs" style="color: #2ecc71;">التقديم للشرطة</a> 
         <% } %>
-      </a>
 
-      <a href="/logout" class="logout-btn">خروج</a>
-    <% } else { %>
-      <a href="/login" class="btn-primary">تسجيل الدخول</a>
-    <% } %>
-  </div>
+        <% if (user && user.perms.isPolice) { %>
+            <a href="/police-rules">قوانين العسكر</a> 
+            <a href="/armory">العهدة العسكرية</a> 
+            <a href="/certificates">الشهادات والرخص</a>
+        <% } %>
+
+        <% if (user && (user.perms.isTrainer || user.perms.isOfficer || user.perms.isAcademyManager)) { %> 
+            <a href="/admin" style="color: #f1c40f;">التقديمات</a> 
+            <a href="/academy" style="color: #3498DB;">الأكاديمية العسكرية</a> 
+        <% } %>
+
+        <% if (user && (user.perms.isOfficer || user.perms.isCertManager)) { %> 
+            <a href="/system/certificates" style="color: #2ecc71;">إدارة الشهادات</a> 
+        <% } %>
+
+        <% if (user && user.perms.isOfficer) { %> 
+            <a href="/system" style="color: #e74c3c; font-weight: bold;">إدارة النظام</a> 
+        <% } %>
+    </div>
+    
+    <div>
+        <% if (user) { %>
+            <span style="color:#4CAF50; font-weight:bold; font-size: 14px;">
+                <% if (user.perms.isPolice) { %> 
+                    [ <%= user.perms.isOfficer ? 'ضابط' : (user.perms.isAcademyManager ? 'إدارة أكاديمية' : (user.perms.isTrainer ? 'مدرب' : (user.perms.isNCO ? 'ضابط صف' : 'فرد'))) %> | <%= user.customRank %> ] 
+                <% } %>
+                <%= user.username %>
+            </span> | <a href="/logout" style="color:#ff4747; text-decoration:none;">خروج</a>
+        <% } else { %>
+            <a href="/login" class="btn-primary">دخول</a>
+        <% } %>
+    </div>
 </div>
 
 <div class="toast-container" id="toast-container">
-  <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-    <% notifications.forEach(notif => { %>
-      <div class="toast <%= notif.type %>"><%= notif.message %></div>
-    <% }) %>
-  <% } %>
+    <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
+        <% notifications.forEach(notif => { %>
+            <div class="toast <%= notif.type %>"><%= notif.message %></div>
+        <% }) %>
+    <% } %>
 </div>
 
 <script>
-  document.querySelectorAll('.toast').forEach(t => {
-    setTimeout(() => {
-      t.style.opacity = '0';
-      setTimeout(() => t.remove(), 400);
-    }, 6000);
-  });
-</script>
+    // تم تصحيح هذا الجزء لمنع خطأ الـ catch
+    function showCustomToast(msg, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`; 
+        toast.innerText = msg;
+        container.appendChild(toast);
+        setTimeout(() => { 
+            toast.style.animation = 'slideOut 0.5s forwards'; 
+            setTimeout(() => toast.remove(), 500); 
+        }, 5000);
+    }
 
-  <div class="nav-links">
-    <a href="/" class="nav-link-main">الرئيسية</a>
+    document.querySelectorAll('.toast').forEach(t => {
+        setTimeout(() => { 
+            t.style.animation = 'slideOut 0.5s forwards'; 
+            setTimeout(() => t.remove(), 500); 
+        }, 8000);
+    });
+</script>

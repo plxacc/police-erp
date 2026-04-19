@@ -37,272 +37,160 @@
         }
         .summary-rejected:hover { background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(0,0,0,0.7)); }
     </style>
-</head><body>
-  <%- include('partials/navbar') %>
-  <div class="container fade-in">
-    <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <div class="container fade-in">
+        <a href="/system" class="btn-secondary" style="margin-bottom: 20px;">⬅️ العودة للوحة المركزية</a>
+        
+        <h1 class="header-title-blue">🎓 أكاديمية الشرطة</h1>
+        <input type="text" id="searchAcademy" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAcademy', 'academyContainer')">
 
-    <h1 class="header-title-blue">🎓 أكاديمية الشرطة</h1>
-    <input type="text" id="searchAcademy" class="search-bar" placeholder="🔍 ابحث بالاسم، الديسكورد، أو الرقم الوطني..." onkeyup="filterCards('searchAcademy', 'academyContainer')">
+        <% let academyApps = []; let failedApps = []; Object.entries(db).forEach(([id, app]) => { if (app.status === 'academy') academyApps.push({ id, ...app }); else if (app.status === 'failed_academy') failedApps.push({ id, ...app }); }); %>
 
-    <% 
-      let academyApps = []; 
-      let failedApps = []; 
-      Object.entries(db).forEach(([id, app]) => { 
-        if (app.status === 'academy') academyApps.push({ id, ...app }); 
-        else if (app.status === 'failed_academy') failedApps.push({ id, ...app }); 
-      }); 
-    %>
+        <div id="academyContainer">
+            <details open style="margin-bottom: 30px;">
+                <summary class="summary-academy">⏳ المتدربين الحاليين (<%= academyApps.length %>) <span>▼</span></summary>
+                <% if (academyApps.length === 0) { %><p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">لا يوجد متدربين حالياً.</p><% } %>
+                <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
+                <% academyApps.forEach(app => { %>
+                    <div class="searchable-card app-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                            <h3 style="color: white; margin: 0;">👤 المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
+                            <% if (app.grades && app.grades.total > 0) { %>
+                                <% if (app.grades.total >= 65) { %> <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 5px 15px; border-radius: 5px; color: var(--success); font-weight:bold;">الدرجة: <%= app.grades.total %>/75 (اجتاز ✅)</span>
+                                <% } else { %> <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">الدرجة: <%= app.grades.total %>/75 (لم يجتز ❌)</span> <% } %>
+                            <% } else { %> <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid var(--warning); padding: 5px 15px; border-radius: 5px; color: var(--warning); font-weight:bold;">قيد التقييم ⏳</span> <% } %>
+                        </div>
 
-    <div id="academyContainer">
+                        <div class="info-grid">
+                            <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                            <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
+                            <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
+                            <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
+                            <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
+                            <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:#3498DB;">عرض الصورة 🖼️</a></div>
+                        </div>
 
-      <!-- ✅ المتدربين الحاليين -->
-      <details open style="margin-bottom: 30px;">
-        <summary class="summary-academy">⏳ المتدربين الحاليين (<%= academyApps.length %>) <span>▼</span></summary>
+                        <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض إجابات التقديم المبدئي</button>
+                        <div id="answers_<%= app.id %>" class="answers-box">
+                            <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
+                                <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
+                            <% }) %>
+                        </div>
 
-        <% if (academyApps.length === 0) { %>
-          <p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-            لا يوجد متدربين حالياً.
-          </p>
-        <% } %>
+                        <% if (perms.canGrade || user.perms.isOfficer || user.perms.isAcademyManager) { %>
+                            <% let g = app.grades || {}; let canOverride = user.perms.isOfficer || user.perms.isAcademyManager; %>
+                            <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
+                                <h4 style="color: var(--warning); margin-bottom: 15px; font-size: 16px;">📝 رصد وتقييم الأكاديمية</h4>
+                                <input type="hidden" name="userId" value="<%= app.id %>">
+                                <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; justify-content: flex-start;">
+                                    <div style="display:flex; flex-direction:column; align-items:center;">
+                                        <label class="grade-label">الاستيقافات (20)</label>
+                                        <input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.stops?.grader){ %><%- canOverride && g.stops.graderId ? `<a href="/system/personnel?open=${g.stops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.stops.grader %><%- canOverride && g.stops.graderId ? `</a>` : `</span>` %><% } %>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:center;">
+                                        <label class="grade-label">العمليات (20)</label>
+                                        <input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.ops?.grader){ %><%- canOverride && g.ops.graderId ? `<a href="/system/personnel?open=${g.ops.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.ops.grader %><%- canOverride && g.ops.graderId ? `</a>` : `</span>` %><% } %>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:center;">
+                                        <label class="grade-label">التفاوض (20)</label>
+                                        <input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.neg?.grader){ %><%- canOverride && g.neg.graderId ? `<a href="/system/personnel?open=${g.neg.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.neg.grader %><%- canOverride && g.neg.graderId ? `</a>` : `</span>` %><% } %>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:center;">
+                                        <label class="grade-label">أسئلة عامة (10)</label>
+                                        <input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.general?.grader){ %><%- canOverride && g.general.graderId ? `<a href="/system/personnel?open=${g.general.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.general.grader %><%- canOverride && g.general.graderId ? `</a>` : `</span>` %><% } %>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:center;">
+                                        <label class="grade-label">الحضور (5)</label>
+                                        <input type="number" name="att" max="5" min="0" class="grade-input" value="<%= g.att?.value || '' %>" <%= g.att?.value && !canOverride ? 'readonly' : '' %>>
+                                        <% if(g.att?.grader){ %><%- canOverride && g.att.graderId ? `<a href="/system/personnel?open=${g.att.graderId}" class="grader-name" style="text-decoration:underline;">` : `<span class="grader-name">` %><%= g.att.grader %><%- canOverride && g.att.graderId ? `</a>` : `</span>` %><% } %>
+                                    </div>
+                                    <div style="margin-top: 25px; align-self: center;">
+                                        <button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 8px 20px; font-size:16px;">حفظ واعتماد 💾</button>
+                                    </div>
+                                </div>
+                            </form>
+                        <% } %>
 
-        <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
-          <% academyApps.forEach(app => { %>
-            <div class="searchable-card app-card">
-
-              <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3 style="color: white; margin: 0;">👤 المتدرب: <%= app.personalInfo?.realName || app.username %></h3>
-
-                <% if (app.grades && app.grades.total > 0) { %>
-                  <% if (app.grades.total >= 65) { %>
-                    <span style="background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success); padding: 5px 15px; border-radius: 5px; color: var(--success); font-weight:bold;">
-                      الدرجة: <%= app.grades.total %>/75 (اجتاز ✅)
-                    </span>
-                  <% } else { %>
-                    <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold;">
-                      الدرجة: <%= app.grades.total %>/75 (لم يجتز ❌)
-                    </span>
-                  <% } %>
-                <% } else { %>
-                  <span style="background: rgba(241, 196, 15, 0.2); border: 1px solid var(--warning); padding: 5px 15px; border-radius: 5px; color: var(--warning); font-weight:bold;">
-                    قيد التقييم ⏳
-                  </span>
-                <% } %>
-              </div>
-
-              <div class="info-grid">
-                <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
-                <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
-                <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
-                <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
-                <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
-                <div class="info-item">الصورة:
-                  <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" rel="noopener noreferrer" style="color:#3498DB;">عرض الصورة 🖼️</a>
-                </div>
-              </div>
-
-              <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px;">👁️ عرض إجابات التقديم المبدئي</button>
-              <div id="answers_<%= app.id %>" class="answers-box">
-                <% Object.entries(app.answers || {}).forEach(([key, ans]) => { 
-                     const qIndex = parseInt(key.split('_')[1]); 
-                     const qLabel = questions[qIndex] ? questions[qIndex].label : key; 
-                %>
-                  <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p>
-                  <p style="color: white; margin-bottom: 10px; white-space: pre-wrap;"><%= ans %></p>
+                        <% if (perms.canFinalAccept || perms.canReject) { %>
+                        <div style="display:flex; gap:10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                            <% if (perms.canFinalAccept) { %>
+                                <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد بشكل نهائي؟');" style="display:flex; flex:2;">
+                                    <input type="hidden" name="userId" value="<%= app.id %>">
+                                    <button type="submit" class="btn-success" style="width: 100%;">تجنيد نهائي ✅</button>
+                                </form>
+                            <% } %>
+                            <% if (perms.canReject) { %>
+                                <form action="/admin/action" method="POST" style="display:flex; gap:5px; flex:1;">
+                                    <input type="hidden" name="userId" value="<%= app.id %>"><input type="hidden" name="action" value="fail_training">
+                                    <input type="text" name="reason" placeholder="سبب الرسوب..." required style="flex:1; margin:0;"><button type="submit" class="btn-danger">رسوب ورفض ❌</button>
+                                </form>
+                            <% } %>
+                        </div>
+                        <% } %>
+                    </div>
                 <% }) %>
-              </div>
-
-              <% if (perms.canGrade || user.perms.isOfficer || user.perms.isAcademyManager) { %>
-                <% 
-                  let g = app.grades || {}; 
-                  let canOverride = user.perms.isOfficer || user.perms.isAcademyManager; 
-                %>
-
-                <form action="/admin/grade" method="POST" style="background: rgba(241, 196, 15, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--warning);">
-                  <h4 style="color: var(--warning); margin-bottom: 15px; font-size: 16px;">📝 رصد وتقييم الأكاديمية</h4>
-                  <input type="hidden" name="userId" value="<%= app.id %>">
-
-                  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; justify-content:flex-start;">
-
-                    <!-- ✅ الاستيقافات -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                      <label class="grade-label">الاستيقافات (20)</label>
-                      <input type="number" name="stops" max="20" min="0" class="grade-input" value="<%= g.stops?.value || '' %>" <%= g.stops?.value && !canOverride ? 'readonly' : '' %>>
-
-                      <% if (g.stops?.grader) { %>
-                        <% if (canOverride && g.stops.graderId) { %>
-                          <a href="/system/personnel/<%= g.stops.graderId %>" class="grader-name" style="text-decoration:underline;"><%= g.stops.grader %></a>
-                        <% } else { %>
-                          <span class="grader-name"><%= g.stops.grader %></span>
-                        <% } %>
-                      <% } %>
-                    </div>
-
-                    <!-- ✅ العمليات -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                      <label class="grade-label">العمليات (20)</label>
-                      <input type="number" name="ops" max="20" min="0" class="grade-input" value="<%= g.ops?.value || '' %>" <%= g.ops?.value && !canOverride ? 'readonly' : '' %>>
-
-                      <% if (g.ops?.grader) { %>
-                        <% if (canOverride && g.ops.graderId) { %>
-                          <a href="/system/personnel/<%= g.ops.graderId %>" class="grader-name" style="text-decoration:underline;"><%= g.ops.grader %></a>
-                        <% } else { %>
-                          <span class="grader-name"><%= g.ops.grader %></span>
-                        <% } %>
-                      <% } %>
-                    </div>
-
-                    <!-- ✅ التفاوض -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                      <label class="grade-label">التفاوض (20)</label>
-                      <input type="number" name="neg" max="20" min="0" class="grade-input" value="<%= g.neg?.value || '' %>" <%= g.neg?.value && !canOverride ? 'readonly' : '' %>>
-
-                      <% if (g.neg?.grader) { %>
-                        <% if (canOverride && g.neg.graderId) { %>
-                          <a href="/system/personnel/<%= g.neg.graderId %>" class="grader-name" style="text-decoration:underline;"><%= g.neg.grader %></a>
-                        <% } else { %>
-                          <span class="grader-name"><%= g.neg.grader %></span>
-                        <% } %>
-                      <% } %>
-                    </div>
-
-                    <!-- ✅ أسئلة عامة -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                      <label class="grade-label">أسئلة عامة (10)</label>
-                      <input type="number" name="general" max="10" min="0" class="grade-input" value="<%= g.general?.value || '' %>" <%= g.general?.value && !canOverride ? 'readonly' : '' %>>
-
-                      <% if (g.general?.grader) { %>
-                        <% if (canOverride && g.general.graderId) { %>
-                          <a href="/system/personnel/<%= g.general.graderId %>" class="grader-name" style="text-decoration:underline;"><%= g.general.grader %></a>
-                        <% } else { %>
-                          <span class="grader-name"><%= g.general.grader %></span>
-                        <% } %>
-                      <% } %>
-                    </div>
-
-                    <!-- ✅ الحضور -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                      <label class="grade-label">الحضور (5)</label>
-                      <input type="number" name="att" max="5" min="0" class="grade-input" value="<%= g.att?.value || '' %>" <%= g.att?.value && !canOverride ? 'readonly' : '' %>>
-
-                      <% if (g.att?.grader) { %>
-                        <% if (canOverride && g.att.graderId) { %>
-                          <a href="/system/personnel/<%= g.att.graderId %>" class="grader-name" style="text-decoration:underline;"><%= g.att.grader %></a>
-                        <% } else { %>
-                          <span class="grader-name"><%= g.att.grader %></span>
-                        <% } %>
-                      <% } %>
-                    </div>
-
-                    <div style="margin-top: 25px; align-self: center;">
-                      <button type="submit" class="btn-warning" style="color:black; font-weight:bold; padding: 8px 20px; font-size:16px;">حفظ واعتماد 💾</button>
-                    </div>
-
-                  </div>
-                </form>
-              <% } %>
-
-              <% if (perms.canFinalAccept || perms.canReject) { %>
-                <div style="display:flex; gap:10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
-                  <% if (perms.canFinalAccept) { %>
-                    <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد بشكل نهائي؟');" style="display:flex; flex:2;">
-                      <input type="hidden" name="userId" value="<%= app.id %>">
-                      <button type="submit" class="btn-success" style="width: 100%;">تجنيد نهائي ✅</button>
-                    </form>
-                  <% } %>
-
-                  <% if (perms.canReject) { %>
-                    <form action="/admin/action" method="POST" style="display:flex; gap:5px; flex:1;">
-                      <input type="hidden" name="userId" value="<%= app.id %>">
-                      <input type="hidden" name="action" value="fail_training">
-                      <input type="text" name="reason" placeholder="سبب الرسوب..." required style="flex:1; margin:0;">
-                      <button type="submit" class="btn-danger">رسوب ورفض ❌</button>
-                    </form>
-                  <% } %>
                 </div>
-              <% } %>
+            </details>
 
-            </div>
-          <% }) %>
-        </div>
-      </details>
+            <details style="margin-bottom: 30px;">
+                <summary class="summary-rejected">❌ الراسبين بالأكاديمية (الرفض النهائي) (<%= failedApps.length %>) <span>▼</span></summary>
+                <% if (failedApps.length === 0) { %><p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">لا يوجد راسبين.</p><% } %>
+                <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
+                <% failedApps.forEach(app => { %>
+                    <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                            <h3 style="color: #e74c3c; margin: 0;">❌ الراسب: <%= app.personalInfo?.realName || app.username %> <br><span style="font-size:14px; color:white;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span></h3>
+                            <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold; align-self:flex-start;">الدرجة النهائية: <%= app.grades?.total || '0' %>/75</span>
+                        </div>
 
-      <!-- ✅ الراسبين -->
-      <details style="margin-bottom: 30px;">
-        <summary class="summary-rejected">❌ الراسبين بالأكاديمية (الرفض النهائي) (<%= failedApps.length %>) <span>▼</span></summary>
+                        <% if (app.grades) { %>
+                        <div style="display:flex; gap:20px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin-bottom: 15px; flex-wrap:wrap; align-items:center; border: 1px solid #333;">
+                            <div class="info-item" style="text-align:center;"><span style="color:white; font-size:14px;">الاستيقافات</span><br><span style="font-family: monospace; font-size: 16px; color:var(--warning);"><%= app.grades.stops?.value||'0' %></span> <br><small style="color:gray; background:rgba(0,0,0,0.5); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:5px;"><%= app.grades.stops?.grader||'-' %></small></div>
+                            <div class="info-item" style="text-align:center;"><span style="color:white; font-size:14px;">العمليات</span><br><span style="font-family: monospace; font-size: 16px; color:var(--warning);"><%= app.grades.ops?.value||'0' %></span> <br><small style="color:gray; background:rgba(0,0,0,0.5); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:5px;"><%= app.grades.ops?.grader||'-' %></small></div>
+                            <div class="info-item" style="text-align:center;"><span style="color:white; font-size:14px;">التفاوض</span><br><span style="font-family: monospace; font-size: 16px; color:var(--warning);"><%= app.grades.neg?.value||'0' %></span> <br><small style="color:gray; background:rgba(0,0,0,0.5); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:5px;"><%= app.grades.neg?.grader||'-' %></small></div>
+                            <div class="info-item" style="text-align:center;"><span style="color:white; font-size:14px;">أسئلة عامة</span><br><span style="font-family: monospace; font-size: 16px; color:var(--warning);"><%= app.grades.general?.value||'0' %></span> <br><small style="color:gray; background:rgba(0,0,0,0.5); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:5px;"><%= app.grades.general?.grader||'-' %></small></div>
+                            <div class="info-item" style="text-align:center;"><span style="color:white; font-size:14px;">الحضور</span><br><span style="font-family: monospace; font-size: 16px; color:var(--warning);"><%= app.grades.att?.value||'0' %></span> <br><small style="color:gray; background:rgba(0,0,0,0.5); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:5px;"><%= app.grades.att?.grader||'-' %></small></div>
+                        </div>
+                        <% } %>
 
-        <% if (failedApps.length === 0) { %>
-          <p style="color: gray; text-align:center; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-            لا يوجد راسبين.
-          </p>
-        <% } %>
+                        <div class="info-grid">
+                            <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
+                            <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
+                            <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
+                            <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
+                            <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
+                            <div class="info-item">الصورة: <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" style="color:var(--primary);">عرض الصورة 🖼️</a></div>
+                        </div>
 
-        <div style="max-height: 65vh; overflow-y: auto; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1);">
-          <% failedApps.forEach(app => { %>
-            <div class="searchable-card app-card" style="border-color: #e74c3c; opacity: 0.8;">
+                        <button class="btn-secondary" onclick="toggleElement('answers_<%= app.id %>')" style="margin-bottom: 15px; font-size:12px;">👁️ عرض الإجابات (للأرشفة)</button>
+                        <div id="answers_<%= app.id %>" class="answers-box">
+                            <% Object.entries(app.answers || {}).forEach(([key, ans]) => { const qIndex = parseInt(key.split('_')[1]); const qLabel = questions[qIndex] ? questions[qIndex].label : key; %>
+                                <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p><p style="color: white; margin-bottom: 10px;"><%= ans %></p>
+                            <% }) %>
+                        </div>
 
-              <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3 style="color: #e74c3c; margin: 0;">
-                  ❌ الراسب: <%= app.personalInfo?.realName || app.username %><br>
-                  <span style="font-size:14px; color:white;">(السبب: <%= app.rejectReason || 'غير مسجل' %>)</span>
-                </h3>
-                <span style="background: rgba(231, 76, 60, 0.2); border: 1px solid var(--danger); padding: 5px 15px; border-radius: 5px; color: var(--danger); font-weight:bold; align-self:flex-start;">
-                  الدرجة النهائية: <%= app.grades?.total || '0' %>/75
-                </span>
-              </div>
-
-              <div class="info-grid">
-                <div class="info-item">الهوية: <span><%= app.personalInfo?.nationalId || 'غير متوفر' %></span></div>
-                <div class="info-item">العمر: <span><%= app.personalInfo?.age || 'غير متوفر' %></span> | الميلاد: <span><%= app.personalInfo?.dob || '-' %></span></div>
-                <div class="info-item">الجنسية: <span><%= app.personalInfo?.nationality || 'غير متوفر' %></span></div>
-                <div class="info-item">الجوال: <span><%= app.personalInfo?.phone || 'غير متوفر' %></span></div>
-                <div class="info-item">ديسكورد: <span style="user-select: all;"><%= app.username %> ( <%= app.id %> )</span></div>
-                <div class="info-item">الصورة:
-                  <a href="<%= app.personalInfo?.imageUrl || '#' %>" target="_blank" rel="noopener noreferrer" style="color:var(--primary);">عرض الصورة 🖼️</a>
-                </div>
-              </div>
-
-              <button class="btn-secondary" onclick="toggleElement('answers_failed_<%= app.id %>')" style="margin-bottom: 15px; font-size:12px;">👁️ عرض الإجابات (للأرشفة)</button>
-              <div id="answers_failed_<%= app.id %>" class="answers-box">
-                <% Object.entries(app.answers || {}).forEach(([key, ans]) => { 
-                     const qIndex = parseInt(key.split('_')[1]); 
-                     const qLabel = questions[qIndex] ? questions[qIndex].label : key; 
-                %>
-                  <p style="color: gray; font-size: 13px; margin: 0;"><%= qLabel %></p>
-                  <p style="color: white; margin-bottom: 10px;"><%= ans %></p>
+                        <% if (perms.canFinalAccept) { %>
+                                <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد بشكل نهائي؟');" style="display:flex; flex:2;">
+                                    <input type="hidden" name="userId" value="<%= app.id %>">
+                                    <button type="submit" class="btn-success" style="width: 100%;">تجنيد نهائي ✅</button>
+                                </form>
+                            </form>
+                        <% } %>
+                    </div>
                 <% }) %>
-              </div>
-
-              <% if (perms.canFinalAccept) { %>
-                <form action="/admin/enlist" method="POST" onsubmit="return confirm('تأكيد تجنيد الفرد بشكل نهائي؟');" style="display:flex;">
-                  <input type="hidden" name="userId" value="<%= app.id %>">
-                  <button type="submit" class="btn-success" style="width: 100%;">تجنيد نهائي ✅</button>
-                </form>
-              <% } %>
-
-            </div>
-          <% }) %>
+                </div>
+            </details>
         </div>
-      </details>
-
     </div>
-  </div>
-
-  <script>
-    function toggleElement(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.style.display = el.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function filterCards(inputId, containerId) {
-      const filter = document.getElementById(inputId).value.toLowerCase();
-      const cards = document.getElementById(containerId).getElementsByClassName('searchable-card');
-      for (let i = 0; i < cards.length; i++) {
-        let text = cards[i].innerText.toLowerCase();
-        cards[i].style.display = text.includes(filter) ? "" : "none";
-      }
-    }
-  </script>
+    <script>
+        function toggleElement(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+        function filterCards(inputId, containerId) { const filter = document.getElementById(inputId).value.toLowerCase(); const cards = document.getElementById(containerId).getElementsByClassName('searchable-card'); for (let i = 0; i < cards.length; i++) { let text = cards[i].innerText.toLowerCase(); cards[i].style.display = text.includes(filter) ? "" : "none"; } }
+    </script>
 </body>
 </html>
