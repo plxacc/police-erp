@@ -657,33 +657,59 @@ app.post('/system/questions/delete', async (req, res) => {
 });
 
 app.get('/system/personnel', async (req, res) => {
-    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
-    const guild = client.guilds.cache.get(process.env.GUILD_ID); const members = guild.members.cache;
-    const policeMembers = members.filter(m => m.roles.cache.has(process.env.ENLISTED_ROLE_ID) || m.roles.cache.has(process.env.NCO_ROLE_ID) || m.roles.cache.has(process.env.OFFICERS_ROLE_ID));
-    
-    const personnelDB = await db.get('personnel', {});
-    const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
-    if(!custody.vehicleTypes) custody.vehicleTypes = [];
-    
-    const list = policeMembers.map(m => { 
-        let dRank = "أفراد"; 
-        if(m.roles.cache.has(process.env.OFFICERS_ROLE_ID)) dRank = "ضباط"; 
-        else if(m.roles.cache.has(process.env.NCO_ROLE_ID)) dRank = "ضباط صف"; 
-        const dbData = personnelDB[m.id] || {
-    rank: "مستجد", 
-    certs: [], 
-    delegatedPerms: [], 
-    nationalId: "غير مسجل", 
-    realName: m.user.username, 
-    joinDate: "", 
-    lastLogin: "" 
-   };
-        return { id: m.id, username: m.user.username, discordRank: dRank, siteRank: dbData.rank, certs: dbData.certs || [], delegatedPerms: dbData.delegatedPerms || [], nationalId: dbData.nationalId, realName: dbData.realName, joinDate: dbData.joinDate, lastLogin: dbData.lastLogin }; 
-    });
-    
-    res.render('personnel', { user: req.session.user, list, RANKS_LADDER, custody, certTypes: CERT_TYPES, PERMISSIONS_LIST });
-});
+  if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
 
+  const guild = client.guilds.cache.get(process.env.GUILD_ID);
+  if (!guild) return res.redirect('/');
+
+  // ✅ هذا السطر هو الحل
+  await guild.members.fetch().catch(() => {});
+
+  const members = guild.members.cache;
+
+  const policeMembers = members.filter(m =>
+    m.roles.cache.has(process.env.ENLISTED_ROLE_ID) ||
+    m.roles.cache.has(process.env.NCO_ROLE_ID) ||
+    m.roles.cache.has(process.env.OFFICERS_ROLE_ID)
+  );
+
+  const personnelDB = await db.get('personnel', {});
+  const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [] });
+
+  const list = policeMembers.map(m => {
+    let discordRank = "أفراد";
+    if (m.roles.cache.has(process.env.OFFICERS_ROLE_ID)) discordRank = "ضباط";
+    else if (m.roles.cache.has(process.env.NCO_ROLE_ID)) discordRank = "ضباط صف";
+
+    const dbData = personnelDB[m.id] || {
+      rank: "مستجد",
+      certs: [],
+      delegatedPerms: [],
+      nationalId: "غير مسجل",
+      realName: m.user.username,
+      joinDate: "",
+      lastLogin: ""
+    };
+
+    return {
+      id: m.id,
+      username: m.user.username,
+      discordRank,
+      siteRank: dbData.rank,
+      certs: dbData.certs || [],
+      nationalId: dbData.nationalId,
+      realName: dbData.realName,
+      joinDate: dbData.joinDate,
+      lastLogin: dbData.lastLogin
+    };
+  });
+
+  res.render('personnel', {
+    user: req.session.user,
+    list,
+    custody
+  });
+});
 app.post('/system/personnel/action', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
     const { targetId, action, newDiscordRole, newSiteRank, newRealName, newNationalId, delegatedPerms, reason } = req.body; 
