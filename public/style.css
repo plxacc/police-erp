@@ -66,8 +66,8 @@ body::before {
    ========================================= */
 .navbar {
     background: rgba(5, 7, 12, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     padding: 12px 24px;
     display: flex;
     justify-content: space-between;
@@ -140,7 +140,7 @@ body::before {
 .card:hover, .app-card:hover {
     transform: translateY(-3px);
     border-color: var(--glass-border-strong);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 20px rgba(14, 165, 233, 0.15);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.45), 0 0 10px rgba(14, 165, 233, 0.10);
 }
 
 /* تلوين الخطوط العلوية حسب القسم (تكتيك بصري) */
@@ -154,7 +154,7 @@ body::before {
    ========================================= */
 details summary, .collapsible-header { 
     background: linear-gradient(90deg, rgba(14, 165, 233, 0.15), rgba(0,0,0,0.6)); 
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(5px);
     padding: 18px 25px; 
     border-radius: 10px; 
     cursor: pointer; 
@@ -252,7 +252,7 @@ button:active, .btn:active { transform: scale(0.96); }
     display: none; position: fixed; z-index: 10000; left: 0; top: 0; 
     width: 100%; height: 100%; 
     background-color: rgba(0,0,0,0.85); 
-    backdrop-filter: blur(12px); 
+    backdrop-filter: blur(6px); 
     animation: fadeInModal 0.3s ease;
 }
 
@@ -305,3 +305,46 @@ tr.searchable-row:hover td { background: rgba(14, 165, 233, 0.08); border-bottom
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(14, 165, 233, 0.6); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* =========================================
+   تحسين الأداء والاستجابة للجوال
+   ========================================= */
+@media (max-width: 900px) {
+  .navbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+
+  .nav-links {
+    gap: 8px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+    padding: 7px 12px;
+  }
+
+  .container {
+    padding: 22px 14px;
+  }
+
+  .card, .app-card, .profile-section, .hub-card {
+    padding: 18px;
+  }
+
+  .modal-content {
+    width: 96%;
+    margin: 8% auto;
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
