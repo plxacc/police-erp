@@ -380,7 +380,9 @@ app.post('/submit', async (req, res) => {
   if (!settings.appsOpen) return res.redirect('/');
 
   const appsDB = await db.get('apps', {});
-  if (appsDB[req.session.user.id]) return res.send('لقد قدمت مسبقاً!');
+  if (appsDB[req.session.user.id]) {
+    return res.send('❌ لقد قدمت مسبقاً وطلبك قيد المراجعة.');
+  }
 
   let answersData = {};
   for (let key in req.body) {
@@ -609,17 +611,22 @@ app.post('/admin/enlist', async (req, res) => {
       });
     }
 
-    personnelDB[userId] = {
-      id: userId,
-      realName: targetData.personalInfo?.realName || targetData.username,
-      username: targetData.username,
-      nationalId: targetData.personalInfo?.nationalId || 'غير مسجل',
-      rank: 'جندي',
-      certs: [],
-      delegatedPerms: [],
-      joinDate: new Date().toLocaleDateString('ar-SA'),
-      lastLogin: new Date().toLocaleString('ar-SA')
-    };
+   personnelDB[userId] = {
+  id: userId,
+  realName: targetData.personalInfo?.realName || targetData.username,
+  username: targetData.username,
+  nationalId: targetData.personalInfo?.nationalId || 'غير متوفر',
+  age: targetData.personalInfo?.age || 'غير متوفر',
+  dob: targetData.personalInfo?.dob || '-',
+  nationality: targetData.personalInfo?.nationality || 'غير متوفر',
+  phone: targetData.personalInfo?.phone || 'غير متوفر',
+  imageUrl: targetData.personalInfo?.imageUrl || '',
+  rank: 'جندي',
+  certs: [],
+  delegatedPerms: [],
+  joinDate: new Date().toLocaleDateString('ar-SA'),
+  lastLogin: new Date().toLocaleString('ar-SA')
+};
 
     delete appsDB[userId];
     await db.save('apps', appsDB);
@@ -1007,18 +1014,23 @@ app.get('/system/personnel/:id', async (req, res) => {
     lastLogin: ""
   };
 
-  const person = {
-    id: targetId,
-    username: member.user.username,
-    realName: dbData.realName || member.user.username,
-    nationalId: dbData.nationalId || "غير مسجل",
-    siteRank: dbData.rank || dbData.siteRank || "مستجد",
-    discordRank,
-    certs: dbData.certs || [],
-    delegatedPerms: dbData.delegatedPerms || [],
-    joinDate: dbData.joinDate || "",
-    lastLogin: dbData.lastLogin || ""
-  };
+const person = {
+  id: targetId,
+  username: member.user.username,
+  realName: dbData.realName || member.user.username,
+  nationalId: dbData.nationalId || "غير متوفر",
+  age: dbData.age || "غير متوفر",
+  dob: dbData.dob || "-",
+  nationality: dbData.nationality || "غير متوفر",
+  phone: dbData.phone || "غير متوفر",
+  imageUrl: dbData.imageUrl || "",
+  siteRank: dbData.rank || dbData.siteRank || "مستجد",
+  discordRank,
+  certs: dbData.certs || [],
+  delegatedPerms: dbData.delegatedPerms || [],
+  joinDate: dbData.joinDate || "",
+  lastLogin: dbData.lastLogin || ""
+};
 
   const memberWeapons = (custody.weaponLogs || [])
     .map((l, i) => ({ ...l, originalIndex: i }))

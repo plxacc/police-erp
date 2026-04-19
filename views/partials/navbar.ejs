@@ -1,9 +1,5 @@
 <div class="navbar">
-  <h2>القيادة العامة للشرطة</h2>
-
-  <div class="nav-links">
-    <a href="/" class="nav-link-main">الرئيسية</a>
-    <a href="/public-rules" class="nav-link-main">قوانين المواطنين</a>
+  <h2>القيادة العامة للشرطة</h-rules" class="nav-link-main">قوانين المواطنين</a>  <h2>القيادة العامة للشرطة</h2>
 
     <% if (!user) { %>
       <a href="/login" class="nav-link-action">التقديم للشرطة</a>
@@ -34,7 +30,7 @@
   <div class="user-box">
     <% if (user) { %>
       <a href="/system/personnel/<%= user.id %>" class="user-card">
-        <div class="user-name"><%= user.username %></div>
+        <div class="user-name"><%= user.realName || user.username %></div>
 
         <% if (user.perms.isPolice) { %>
           <div class="user-rank">
@@ -45,7 +41,7 @@
                 user.perms.isNCO ? 'ضابط صف' : 'فرد' %>
           </div>
         <% } else { %>
-          <div class="user-rank">مدني</div>
+          <div class="user-rank"><%= user.perms.isActivated ? 'مفعل' : 'غير مفعل' %></div>
         <% } %>
       </a>
 
@@ -72,3 +68,6 @@
     }, 6000);
   });
 </script>
+
+  <div class="nav-links">
+    <a href="/" class="nav-link-main">الرئيسية</a>
