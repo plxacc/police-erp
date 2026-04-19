@@ -262,8 +262,8 @@ app.use(async (req, res, next) => {
 // 🏠 الصفحات العامة والدخول
 // ==========================================
 app.get('/', (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
-  res.render('index', { user: req.session.user });
+  // بدلاً من الـ redirect، سنرسل حالة المستخدم (سواء كان موجوداً أو null)
+  res.render('index', { user: req.session.user || null });
 });
 
 app.get('/public-rules', async (req, res) => {

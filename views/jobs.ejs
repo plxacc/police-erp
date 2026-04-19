@@ -181,33 +181,40 @@
     </div>
 
     <script>
-!step1 || !step2) return;
+    function nextStep() {
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        
+        // التحقق من وجود العناصر
+        if (!step1 || !step2) return;
 
-            let inputs = step1.querySelectorAll('input[required]');
-            let isValid = true;
+        // التحقق من تعبئة الحقول المطلوبة في الخطوة الأولى
+        let inputs = step1.querySelectorAll('input[required]');
+        let isValid = true;
 
-            inputs.forEach(input => {
-                if (!input.value) isValid = false;
-            });
+        inputs.forEach(input => {
+            if (!input.value) isValid = false;
+        });
 
-            if (!isValid) {
-                alert("الرجاء تعبئة جميع البيانات الشخصية أولاً!");
-                return;
-            }
-
-            step1.classList.remove('active');
-            step2.classList.add('active');
+        if (!isValid) {
+            alert("الرجاء تعبئة جميع البيانات الشخصية أولاً!");
+            return;
         }
 
-        function prevStep() {
-            const step1 = document.getElementById('step1');
-            const step2 = document.getElementById('step2');
-            if (!step1 || !step2) return;
+        // الانتقال للخطوة الثانية
+        step1.classList.remove('active');
+        step2.classList.add('active');
+    }
 
-            step2.classList.remove('active');
-            step1.classList.add('active');
-        }
-    </script>
+    function prevStep() {
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        if (!step1 || !step2) return;
+
+        step2.classList.remove('active');
+        step1.classList.add('active');
+    }
+</script>
 </body>
 </html>
     <link rel="stylesheet" href="/style.css?v=7">

@@ -6,6 +6,15 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <% if (!user) { %>
+    <script>
+        // إظهار تنبيه للمستخدم غير المسجل دخول
+        // يمكنك استخدام alert أو تصميم modal مخصص
+        window.onload = function() {
+            alert("مرحباً بك! يرجى تسجيل الدخول عبر ديسكورد للوصول إلى كامل صلاحيات النظام العسكري.");
+        };
+    </script>
+<% } %>
     <%- include('partials/navbar') %>
 
     <div style="text-align:center; padding-top:100px;">
