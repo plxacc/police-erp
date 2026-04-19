@@ -43,7 +43,9 @@ html {
 }
 
 body {
-  background: var(--bg-main);
+  background:
+    linear-gradient(rgba(7, 9, 15, 0.82), rgba(7, 9, 15, 0.82)),
+    url('/logo.png') center center / cover no-repeat;
   color: var(--text-main);
   font-family: "Tajawal", "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
   direction: rtl;
@@ -54,18 +56,9 @@ body {
   font-size: 15px;
 }
 
-/* شعار الخلفية - واضح وكبير وفي الوسط */
+/* إلغاء العنصر القديم */
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url('/logo.png');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: min(1920px, 108vw);
-  opacity: 0.20;
-  pointer-events: none;
-  z-index: -1;
+  content: none;
 }
 
 /* =========================
