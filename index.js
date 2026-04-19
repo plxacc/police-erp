@@ -928,6 +928,7 @@ app.get('/system/personnel', async (req, res) => {
   const guild = getGuild();
   if (!guild) return res.redirect('/');
 
+  // نحمّل الأعضاء مرة واحدة هنا فقط
   await guild.members.fetch().catch(() => {});
   const members = guild.members.cache;
 
@@ -938,8 +939,6 @@ app.get('/system/personnel', async (req, res) => {
   );
 
   const personnelDB = await db.get('personnel', {});
-  const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [] });
-  if (!custody.vehicleTypes) custody.vehicleTypes = [];
 
   const list = policeMembers.map(m => {
     let dRank = "أفراد";
@@ -972,11 +971,67 @@ app.get('/system/personnel', async (req, res) => {
 
   res.render('personnel', {
     user: req.session.user,
-    list,
-    RANKS_LADDER,
+    list
+  });
+});
+
+app.get('/system/personnel/:id', async (req, res) => {
+  if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+
+  const guild = getGuild();
+  if (!guild) return res.redirect('/');
+
+  const targetId = req.params.id;
+  const member = await getGuildMember(targetId);
+  if (!member) return res.redirect('/system/personnel');
+
+  const personnelDB = await db.get('personnel', {});
+  const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [], weaponLogs: [], vehicleLogs: [] });
+  if (!custody.vehicleTypes) custody.vehicleTypes = [];
+
+  let discordRank = "أفراد";
+  if (member.roles.cache.has(process.env.OFFICERS_ROLE_ID)) discordRank = "ضباط";
+  else if (member.roles.cache.has(process.env.NCO_ROLE_ID)) discordRank = "ضباط صف";
+
+  const dbData = personnelDB[targetId] || {
+    rank: "مستجد",
+    certs: [],
+    delegatedPerms: [],
+    nationalId: "غير مسجل",
+    realName: member.user.username,
+    joinDate: "",
+    lastLogin: ""
+  };
+
+  const person = {
+    id: targetId,
+    username: member.user.username,
+    realName: dbData.realName || member.user.username,
+    nationalId: dbData.nationalId || "غير مسجل",
+    siteRank: dbData.rank || dbData.siteRank || "مستجد",
+    discordRank,
+    certs: dbData.certs || [],
+    delegatedPerms: dbData.delegatedPerms || [],
+    joinDate: dbData.joinDate || "",
+    lastLogin: dbData.lastLogin || ""
+  };
+
+  const memberWeapons = (custody.weaponLogs || [])
+    .map((l, i) => ({ ...l, originalIndex: i }))
+    .filter(l => l.receiverDiscordId === targetId);
+
+  const memberVehicles = (custody.vehicleLogs || [])
+    .map((l, i) => ({ ...l, originalIndex: i }))
+    .filter(l => l.receiverDiscordId === targetId);
+
+  res.render('personnel_profile', {
+    user: req.session.user,
+    person,
     custody,
+    memberWeapons,
+    memberVehicles,
     certTypes: CERT_TYPES,
-    PERMISSIONS_LIST
+    RANKS_LADDER
   });
 });
 
