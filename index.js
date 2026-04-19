@@ -584,7 +584,44 @@ app.post('/system/questions/delete', async (req, res) => {
     await db.save('questions', questions); 
     res.redirect('/system/questions'); 
 });
+// ==========================================
+// 1️⃣ المسار الأساسي: يعرض جدول إدارة العسكر (personnel.ejs)
+// ==========================================
+app.get('/system/personnel', async (req, res) => {
+    if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
+    const guild = client.guilds.cache.get(process.env.GUILD_ID); 
+    const members = guild.members.cache;
+    const policeMembers = members.filter(m => m.roles.cache.has(process.env.ENLISTED_ROLE_ID) || m.roles.cache.has(process.env.NCO_ROLE_ID) || m.roles.cache.has(process.env.OFFICERS_ROLE_ID));
+    
+    const personnelDB = await db.get('personnel', {});
+    const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [] }); 
+    if(!custody.vehicleTypes) custody.vehicleTypes = [];
+    
+    const list = policeMembers.map(m => { 
+        let dRank = "أفراد"; 
+        if(m.roles.cache.has(process.env.OFFICERS_ROLE_ID)) dRank = "ضباط"; 
+        else if(m.roles.cache.has(process.env.NCO_ROLE_ID)) dRank = "ضباط صف"; 
+        const dbData = personnelDB[m.id] || { siteRank: "جندي", certs: [], nationalId: "غير مسجل", realName: m.user.username, militaryCode: "", joinDate: "", lastLogin: "" };
+        return { 
+            id: m.id, 
+            username: m.user.username, 
+            discordRank: dRank, 
+            siteRank: dbData.siteRank || dbData.rank || 'جندي', // تحديث ليتوافق مع التعديلات
+            certs: dbData.certs || [], 
+            nationalId: dbData.nationalId, 
+            realName: dbData.realName, 
+            militaryCode: dbData.militaryCode, 
+            joinDate: dbData.joinDate, 
+            lastLogin: dbData.lastLogin 
+        }; 
+    });
+    
+    res.render('personnel', { user: req.session.user, list, RANKS_LADDER, custody, certTypes: CERT_TYPES, PERMISSIONS_LIST });
+});
 
+// ==========================================
+// 2️⃣ المسار الجديد: يفتح ملف العسكري في صفحة مستقلة (profile.ejs)
+// ==========================================
 app.get('/system/personnel/:id', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/system');
     
@@ -597,9 +634,6 @@ app.get('/system/personnel/:id', async (req, res) => {
     const custody = await db.get('custody', { weaponTypes: [], vehicleTypes: [], weaponLogs: [], vehicleLogs: [] });
     const certTypes = await db.get('certTypes', {});
     
-    // سلم الرتب (تأكد أنه يطابق اللي عندك)
-    const RANKS_LADDER = ['جندي', 'جندي أول', 'عريف', 'وكيل رقيب', 'رقيب', 'رقيب أول', 'رئيس رقباء', 'ملازم', 'ملازم أول', 'نقيب', 'رائد', 'مقدم', 'عقيد', 'عميد', 'لواء'];
-
     res.render('profile', {
         user: req.session.user,
         member: member,
@@ -608,7 +642,6 @@ app.get('/system/personnel/:id', async (req, res) => {
         RANKS_LADDER: RANKS_LADDER
     });
 });
-
 app.post('/system/personnel/action', async (req, res) => {
     if (!req.session.user || !req.session.user.perms.isOfficer) return res.redirect('/');
     const { targetId, action, newDiscordRole, newSiteRank, newRealName, newNationalId, delegatedPerms, reason } = req.body; 
