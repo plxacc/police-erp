@@ -1,38 +1,54 @@
 /* =========================
-   Classic, Ultra-Light, Pure White CSS
+   Lightweight Flat CSS
    ========================= */
+:root {
+  --bg: #ffffff;
+  --surface: #f4f6f8;
+  --border: #e1e4e8;
+  --text: #1a1a1a;
+  --text-muted: #5c6c7d;
+  
+  --primary: #0366d6;
+  --success: #28a745;
+  --danger: #d73a49;
+  --warning: #dbab09;
+  --special: #6f42c1;
+}
 
-* {
+/* =========================
+   Reset & Base
+   ========================= */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 body {
-  background-color: #ffffff; /* خلفية بيضاء سادة تماماً */
-  color: #111111; /* نص أسود واضح */
+  background: var(--bg);
+  color: var(--text);
   direction: rtl;
-  font-family: Arial, Tahoma, sans-serif;
-  line-height: 1.6;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
 }
 
 /* =========================
-   Navbar (Classic)
+   Navbar (Static for performance)
    ========================= */
 .navbar {
-  background-color: #ffffff;
-  border-bottom: 2px solid #0056b3;
-  padding: 15px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  padding: 12px 20px;
 }
 
 .navbar h2 {
-  font-size: 20px;
-  color: #000000;
-  margin: 0;
+  font-size: 18px;
+  color: var(--primary);
 }
 
 .nav-links {
@@ -43,40 +59,41 @@ body {
 
 .nav-links a {
   text-decoration: none;
-  color: #0056b3;
-  font-weight: bold;
-  font-size: 15px;
+  color: var(--text);
+  font-size: 14px;
+  padding: 4px 0;
 }
 
 .nav-links a:hover {
+  color: var(--primary);
   text-decoration: underline;
-  color: #003d82;
 }
 
 /* =========================
    Layout
    ========================= */
 .container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 20px auto;
   padding: 0 15px;
 }
 
 /* =========================
-   Cards & Panels (Simple Borders, White Background)
+   Cards & Panels (No Shadows, Flat Borders)
    ========================= */
-.card, .app-card, .profile-section, .hub-card, .item-card,
+.card, .app-card, .profile-section, .hub-card, .item-card, 
 .header-title, .header-title-blue, .info-grid, .answers-box, .inner-box {
-  background-color: #ffffff;
-  border: 1px solid #cccccc;
-  padding: 15px;
-  margin-bottom: 15px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 4px;
 }
 
 .header-title, .header-title-blue {
-  font-size: 18px;
+  text-align: center;
   font-weight: bold;
-  border-bottom: 2px solid #0056b3;
+  background: var(--surface);
 }
 
 /* =========================
@@ -84,14 +101,14 @@ body {
    ========================= */
 .input-grid, .form-grid, .hub-grid, .grid-container, .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .form-grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
 }
 
 /* =========================
@@ -99,55 +116,57 @@ body {
    ========================= */
 input, textarea, select, .form-control, .search-bar {
   width: 100%;
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #999999;
-  padding: 8px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  margin-bottom: 10px;
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: #0056b3;
+  margin-bottom: 12px;
+  border-radius: 4px;
   outline: none;
 }
 
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary);
+}
+
 textarea {
-  min-height: 100px;
   resize: vertical;
+  min-height: 80px;
 }
 
 /* =========================
-   Buttons (Standard Web Buttons)
+   Buttons (Flat, No Animations)
    ========================= */
 button, .btn {
-  background-color: #f0f0f0;
-  color: #000000;
-  border: 1px solid #aaaaaa;
-  padding: 8px 15px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 16px;
   font-size: 14px;
   cursor: pointer;
+  border-radius: 4px;
   text-decoration: none;
   display: inline-block;
   text-align: center;
 }
 
 button:hover, .btn:hover {
-  background-color: #e0e0e0;
+  background: #e1e4e8;
 }
 
-.btn-primary { background-color: #0056b3; color: #ffffff; border-color: #004494; }
-.btn-primary:hover { background-color: #004494; color: #ffffff; }
+.btn-primary { background: var(--primary); color: #fff; border: none; }
+.btn-primary:hover { background: #005cc5; }
 
-.btn-success { background-color: #28a745; color: #ffffff; border-color: #1e7e34; }
-.btn-success:hover { background-color: #218838; }
+.btn-success { background: var(--success); color: #fff; border: none; }
+.btn-success:hover { background: #22863a; }
 
-.btn-danger { background-color: #dc3545; color: #ffffff; border-color: #bd2130; }
-.btn-danger:hover { background-color: #c82333; }
+.btn-danger { background: var(--danger); color: #fff; border: none; }
+.btn-danger:hover { background: #cb2431; }
 
-.btn-warning { background-color: #ffc107; color: #000000; border-color: #d39e00; }
-.btn-warning:hover { background-color: #e0a800; }
+.btn-warning { background: var(--warning); color: #fff; border: none; }
+.btn-warning:hover { background: #b08800; }
 
 .btn-block { display: block; width: 100%; }
 
@@ -158,18 +177,18 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  margin-bottom: 15px;
 }
 
 th, td {
-  border: 1px solid #cccccc;
-  padding: 8px;
+  border: 1px solid var(--border);
+  padding: 10px;
   text-align: right;
   font-size: 14px;
 }
 
 th {
-  background-color: #f9f9f9;
+  background: var(--surface);
+  color: var(--text);
   font-weight: bold;
 }
 
@@ -177,35 +196,35 @@ th {
    Collapsible / Details
    ========================= */
 details summary, .collapsible-header {
-  background-color: #f9f9f9;
-  border: 1px solid #cccccc;
-  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px;
   cursor: pointer;
   font-weight: bold;
   list-style: none;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  border-radius: 4px;
 }
 
 details summary::-webkit-details-marker { display: none; }
 
 /* =========================
-   Modals (Pure White Background)
+   Modals (Solid Background for performance)
    ========================= */
 .modal {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background-color: #ffffff;
+  background: var(--bg); /* Solid white instead of RGBA glass */
   overflow-y: auto;
-  padding: 20px;
 }
 
 .modal-content {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 20px auto;
   padding: 20px;
-  border: 2px solid #000000;
+  border: 1px solid var(--border);
   position: relative;
 }
 
@@ -215,10 +234,9 @@ details summary::-webkit-details-marker { display: none; }
   left: 10px;
   background: none;
   border: none;
-  font-size: 20px;
-  color: #dc3545;
+  font-size: 24px;
+  color: var(--danger);
   cursor: pointer;
-  font-weight: bold;
 }
 
 /* =========================
@@ -226,19 +244,18 @@ details summary::-webkit-details-marker { display: none; }
    ========================= */
 .item-image {
   width: 100%;
-  max-height: 200px;
-  object-fit: contain;
-  border: 1px solid #cccccc;
-  margin-bottom: 10px;
+  max-height: 150px;
+  object-fit: cover;
+  border: 1px solid var(--border);
 }
 
 .badge-custom, .cert-tag {
   display: inline-block;
-  background-color: #f0f0f0;
-  border: 1px solid #cccccc;
-  padding: 3px 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
   font-size: 12px;
-  margin: 2px;
+  border-radius: 4px;
 }
 
 /* =========================
@@ -252,10 +269,14 @@ details summary::-webkit-details-marker { display: none; }
 }
 
 .toast {
-  background-color: #ffffff;
-  color: #000000;
-  border: 2px solid #000000;
-  padding: 10px;
-  margin-bottom: 5px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 12px;
+  margin-bottom: 10px;
   font-size: 14px;
+  border-right: 4px solid var(--primary); /* Minimal hint of color */
 }
+
+.toast.success { border-right-color: var(--success); }
+.toast.danger { border-right-color: var(--danger); }
+.toast.warning { border-right-color: var(--warning); }
