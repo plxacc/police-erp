@@ -785,4 +785,35 @@ app.post('/custody/rules/update', async (req, res) => {
     res.redirect('/armory'); 
 });
 
+// رابط الدخول التلقائي من داخل اللعبة (NUI Login)
+app.get('/login-nui', async (req, res) => {
+    const { discordId, secret } = req.query;
+
+    // التأكد من أن المفتاح السري صحيح (عشان ما حد يخترق الحسابات من المتصفح)
+    if (secret !== process.env.TABLET_SECRET_KEY) {
+        return res.status(403).send("Unauthorized Access");
+    }
+
+    try {
+        // جلب بيانات العسكري من الداتابيس بناءً على الآيدي
+        const personnelDB = await db.get('personnel', {});
+        const userData = personnelDB[discordId];
+
+        // تسجيل الجلسة (Session) يدوياً للعسكري
+        req.session.user = {
+            id: discordId,
+            username: userData ? userData.username : "عسكري متصل",
+            perms: {
+                isOfficer: false, // سيتم تحديثها تلقائياً عند طلب أي صفحة
+                isPolice: true
+            }
+        };
+
+        // بعد تسجيل الدخول، وجهه للصفحة الرئيسية أو العهدة
+        res.redirect('/');
+    } catch (e) {
+        res.redirect('/login');
+    }
+});
+
 app.listen(3000, () => console.log('🚀 شغال على السحابة (MongoDB) بكل قوة!'));
