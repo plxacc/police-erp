@@ -2,30 +2,24 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة التجنيد - وزارة الداخلية</title>
-    <link rel="stylesheet" href="/style.css">
-    <style>
-        .form-step { display: none; }
-        .form-step.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .form-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--primary); color: white; border-radius: 8px; margin: 0; box-sizing: border-box; }
-        .form-label { color: var(--primary); font-size: 14px; margin-bottom: 5px; display: block; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <%- include('partials/navbar') %>
-
-    <div class="container fade-in" style="text-align:center;">
-        <h1 style="color: var(--primary); font-weight: 900; margin-bottom: 5px;">| بوابة التجنيد العسكري |</h1>
-        <hr style="border-color: var(--glass-border); width: 50%; margin: 10px auto 30px auto;">
+    <title>بوابة التجنيد -يد العسكري |</h1>    <title>بوابة التجنيد - وزارة الداخلية</title>
+        <hr style="border-color: var(--border); width: 50%; margin: 10px auto 30px auto;">
 
         <% if (user && user.perms.isOfficer) { %>
             <div class="card" style="border-color: var(--warning); margin-bottom: 40px; background: rgba(245, 158, 11, 0.1);">
                 <h3 style="color: var(--warning);">⚙️ إدارة بوابة التجنيد</h3>
-                <p>الوضع الحالي: <% if (appsOpen) { %><strong style="color: var(--success);">مفتوح</strong><% } else { %><strong style="color: var(--danger);">مغلق</strong><% } %></p>
+                <p>
+                    الوضع الحالي:
+                    <% if (appsOpen) { %>
+                        <strong style="color: var(--success);">مفتوح</strong>
+                    <% } else { %>
+                        <strong style="color: var(--danger);">مغلق</strong>
+                    <% } %>
+                </p>
                 <form action="/admin/toggle-apps" method="POST" style="margin-top: 15px;">
-                    <button type="submit" class="<%= appsOpen ? 'btn-danger' : 'btn-success' %>"><%= appsOpen ? 'إغلاق التقديم الفوري' : 'فتح التقديم الآن' %></button>
+                    <button type="submit" class="<%= appsOpen ? 'btn-danger' : 'btn-success' %>">
+                        <%= appsOpen ? 'إغلاق التقديم الفوري' : 'فتح التقديم الآن' %>
+                    </button>
                 </form>
             </div>
         <% } %>
@@ -36,87 +30,226 @@
                 <p>> 1- العمر 18 سنه فما فوق</p>
                 <p>> 2- المايك جودته ممتازه وغير مزعج</p>
                 <p>> 3- ان تكون شخصية الوظائف الحكومية وان لا يكون بها اي سجل اجرامي</p>
-                </div>
+            </div>
         </div>
 
         <div style="margin-top: 50px;">
+
             <% if (status === 'applied') { %>
-                <div class="card" style="border-color: var(--warning);"><h2 style="color:var(--warning);">طلبك قيد المراجعة حالياً</h2><p>الرجاء الانتظار حتى يتم التدقيق في ملفك.</p></div>
+
+                <div class="card" style="border-color: var(--warning);">
+                    <h2 style="color:var(--warning);">طلبك قيد المراجعة حالياً</h2>
+                    <p>الرجاء الانتظار حتى يتم التدقيق في ملفك.</p>
+                </div>
+
             <% } else if (status === 'academy') { %>
-                <div class="card" style="border-color: #9B59B6;"><h2 style="color:#9B59B6;">🎓 أنت الآن في دورة الأكاديمية</h2><p>تم قبولك مبدئياً. التزم بالحضور وتوجيهات المدربين لاجتياز الدورة.</p></div>
+
+                <div class="card" style="border-color: #9B59B6;">
+                    <h2 style="color:#9B59B6;">🎓 أنت الآن في دورة الأكاديمية</h2>
+                    <p>تم قبولك مبدئياً. التزم بالحضور وتوجيهات المدربين لاجتياز الدورة.</p>
+                </div>
+
             <% } else if (status === 'rejected_initial' || status === 'rejected') { %>
-                <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">عذراً، تم رفض طلبك مبدئياً ❌</h2><p>لم تتطابق الشروط عليك، نتمنى لك التوفيق في التقديمات القادمة.</p></div>
+
+                <div class="card" style="border-color: var(--danger);">
+                    <h2 style="color:var(--danger);">عذراً، تم رفض طلبك مبدئياً ❌</h2>
+                    <p>لم تتطابق الشروط عليك، نتمنى لك التوفيق في التقديمات القادمة.</p>
+                </div>
+
             <% } else if (status === 'failed_academy') { %>
-                <div class="card" style="border-color: #e74c3c;"><h2 style="color:#e74c3c;">عذراً، لم تجتز دورة الأكاديمية ❌</h2><p>لقد رسبت في الدورة العسكرية ولا يمكنك التجنيد حالياً.</p></div>
+
+                <div class="card" style="border-color: #e74c3c;">
+                    <h2 style="color:#e74c3c;">عذراً، لم تجتز دورة الأكاديمية ❌</h2>
+                    <p>لقد رسبت في الدورة العسكرية ولا يمكنك التجنيد حالياً.</p>
+                </div>
+
             <% } else if (!appsOpen) { %>
-                <div class="card" style="border-color: var(--danger);"><h2 style="color:var(--danger);">التقديم مغلق حالياً</h2></div>
+
+                <div class="card" style="border-color: var(--danger);">
+                    <h2 style="color:var(--danger);">التقديم مغلق حالياً</h2>
+                </div>
+
+            <% } else if (!user.perms.isActivated) { %>
+
+                <div class="card" style="border-color: var(--danger);">
+                    <h2 style="color: var(--danger);">⚠️ أنت غير مفعل</h2>
+                    <p style="line-height: 1.9;">
+                        لا يمكنك التقديم حاليًا لأن حسابك غير مفعل.<br>
+                        يرجى مراجعة الإدارة لتفعيلك ثم العودة للتقديم.
+                    </p>
+                </div>
+
             <% } else { %>
-                
-                <button id="startBtn" onclick="document.getElementById('apply-form').style.display='block'; this.style.display='none'" class="btn-success" style="font-size: 20px; padding: 20px 50px;">بدء نموذج التجنيد</button>
+
+                <button
+                    id="startBtn"
+                    onclick="document.getElementById('apply-form').style.display='block'; this.style.display='none'"
+                    class="btn-success"
+                    style="font-size: 20px; padding: 20px 50px;">
+                    بدء نموذج التجنيد
+                </button>
 
                 <div id="apply-form" style="display: none; margin-top: 40px; text-align: right;">
                     <form action="/submit" method="POST" class="card" style="border-color: var(--success);">
-                        
+
                         <div id="step1" class="form-step active">
                             <h2 style="color:var(--success); text-align:center; margin-bottom: 20px;">الخطوة 1: البيانات الشخصية الإجبارية</h2>
-                            
+
                             <div class="input-grid">
-                                <div><label class="form-label">الاسم الثنائي للشخصية</label><input type="text" name="realName" class="form-input" required placeholder="مثال: فهد الدوسري"></div>
-                                <div><label class="form-label">رقم الهوية الوطنية</label><input type="number" name="nationalId" class="form-input" required placeholder="رقم من 6 خانات"></div>
-                                <div><label class="form-label">آيدي الديسكورد (مستخرج تلقائياً)</label><input type="text" class="form-input" value="<%= user.id %>" readonly style="color:gray;"></div>
-                                <div><label class="form-label">تاريخ الميلاد</label><input type="date" name="dob" class="form-input" required></div>
-                                <div><label class="form-label">العمر</label><input type="number" name="age" class="form-input" required placeholder="مثال: 25"></div>
-                                <div><label class="form-label">الجنسية</label><input type="text" name="nationality" class="form-input" required placeholder="مثال: سعودي"></div>
-                                <div><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-input" required placeholder="مثال: 0500000000"></div>
-                                <div><label class="form-label">رابط صورة الهوية/الشخصية</label><input type="url" name="imageUrl" class="form-input" required placeholder="https://..."></div>
+                                <div>
+                                    <label class="form-label">الاسم الثنائي للشخصية</label>
+                                    <input type="text" name="realName" class="form-input" required placeholder="مثال: فهد الدوسري">
+                                </div>
+
+                                <div>
+                                    <label class="form-label">رقم الهوية الوطنية</label>
+                                    <input type="number" name="nationalId" class="form-input" required placeholder="رقم من 6 خانات">
+                                </div>
+
+                                <div>
+                                    <label class="form-label">آيدي الديسكورد (مستخرج تلقائياً)</label>
+                                    <input type="text" class="form-input" value="<%= user.id %>" readonly style="color:gray;">
+                                </div>
+
+                                <div>
+                                    <label class="form-label">تاريخ الميلاد</label>
+                                    <input type="date" name="dob" class="form-input" required>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">العمر</label>
+                                    <input type="number" name="age" class="form-input" required placeholder="مثال: 25">
+                                </div>
+
+                                <div>
+                                    <label class="form-label">الجنسية</label>
+                                    <input type="text" name="nationality" class="form-input" required placeholder="مثال: سعودي">
+                                </div>
+
+                                <div>
+                                    <label class="form-label">رقم الهاتف</label>
+                                    <input type="text" name="phone" class="form-input" required placeholder="مثال: 0500000000">
+                                </div>
+
+                                <div>
+                                    <label class="form-label">رابط صورة الهوية/الشخصية</label>
+                                    <input type="url" name="imageUrl" class="form-input" required placeholder="https://...">
+                                </div>
                             </div>
-                            
-                            <button type="button" class="btn-primary" style="width:100%; font-size:18px;" onclick="nextStep()">التالي: أسئلة التقديم ⬅️</button>
+
+                            <button type="button" class="btn-primary" style="width:100%; font-size:18px;" onclick="nextStep()">
+                                التالي: أسئلة التقديم ⬅️
+                            </button>
                         </div>
 
                         <div id="step2" class="form-step">
                             <h2 style="color:var(--success); text-align:center; margin-bottom: 20px;">الخطوة 2: أسئلة المقابلة</h2>
+
                             <% if (questions && questions.length > 0) { %>
                                 <% questions.forEach((q, index) => { %>
-                                   <label style="color: var(--warning); margin-bottom: 5px; display: block; font-weight:bold;"><%= index + 1 %>. <%= q.label %></label>
-                                   <textarea name="q_<%= index %>" class="form-input" required rows="3" placeholder="أدخل إجابتك هنا بوضوح..." style="margin-bottom: 20px;"></textarea>
-                               <% }) %>
-                           <% } else { %>
-                               <p style="color: var(--danger); text-align:center;">لا توجد أسئلة حالياً، الرجاء مراجعة الإدارة.</p>
-                           <% } %>
+                                    <label style="color: var(--warning); margin-bottom: 5px; display: block; font-weight:bold;">
+                                        <%= index + 1 %>. <%= q.label %>
+                                    </label>
+                                    <textarea
+                                        name="q_<%= index %>"
+                                        class="form-input"
+                                        required
+                                        rows="3"
+                                        placeholder="أدخل إجابتك هنا بوضوح..."
+                                        style="margin-bottom: 20px;"></textarea>
+                                <% }) %>
+                            <% } else { %>
+                                <p style="color: var(--danger); text-align:center;">لا توجد أسئلة حالياً، الرجاء مراجعة الإدارة.</p>
+                            <% } %>
 
-                          <label style="display:flex; align-items:center; gap:10px; margin-bottom: 20px; cursor:pointer; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
-                              <input type="checkbox" required style="width:20px; height:20px; margin:0;">
-                              <span style="color:white; font-size:14px;">أتعهد بأن جميع بياناتي المدخلة صحيحة، وأقر بقوانين العسكرية.</span>
-                          </label>
-                          
-                          <div style="display:flex; gap:10px;">
-                              <button type="button" class="btn-secondary" style="flex:1;" onclick="prevStep()">➡️ رجوع</button>
-                              <button type="submit" class="btn-success" style="flex:3; font-size:20px;">إرسال ملف التجنيد 📥</button>
-                          </div>
+                            <label style="display:flex; align-items:center; gap:10px; margin-bottom: 20px; cursor:pointer; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                                <input type="checkbox" required style="width:20px; height:20px; margin:0;">
+                                <span style="color:white; font-size:14px;">أتعهد بأن جميع بياناتي المدخلة صحيحة، وأقر بقوانين العسكرية.</span>
+                            </label>
+
+                            <div style="display:flex; gap:10px;">
+                                <button type="button" class="btn-secondary" style="flex:1;" onclick="prevStep()">➡️ رجوع</button>
+                                <button type="submit" class="btn-success" style="flex:3; font-size:20px;">إرسال ملف التجنيد 📥</button>
+                            </div>
                         </div>
 
                     </form>
                 </div>
+
             <% } %>
         </div>
     </div>
 
     <script>
-        function nextStep() {
-            // تحقق بسيط من تعبئة الحقول الأساسية قبل الانتقال
-            let inputs = document.getElementById('step1').querySelectorAll('input[required]');
+!step1 || !step2) return;
+
+            let inputs = step1.querySelectorAll('input[required]');
             let isValid = true;
-            inputs.forEach(input => { if(!input.value) isValid = false; });
-            if(!isValid) return alert("الرجاء تعبئة جميع البيانات الشخصية أولاً!");
-            
-            document.getElementById('step1').classList.remove('active');
-            document.getElementById('step2').classList.add('active');
+
+            inputs.forEach(input => {
+                if (!input.value) isValid = false;
+            });
+
+            if (!isValid) {
+                alert("الرجاء تعبئة جميع البيانات الشخصية أولاً!");
+                return;
+            }
+
+            step1.classList.remove('active');
+            step2.classList.add('active');
         }
+
         function prevStep() {
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step1').classList.add('active');
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            if (!step1 || !step2) return;
+
+            step2.classList.remove('active');
+            step1.classList.add('active');
         }
     </script>
 </body>
 </html>
+    <link rel="stylesheet" href="/style.css?v=7">
+    <style>
+        .form-step { display: none; }
+        .form-step.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--primary);
+            color: white;
+            border-radius: 8px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .form-label {
+            color: var(--primary);
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: bold;
+        }
+
+        @media (max-width: 900px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container fade-in" style="text-align:center;">

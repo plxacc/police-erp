@@ -261,7 +261,10 @@ app.use(async (req, res, next) => {
 // ==========================================
 // 🏠 الصفحات العامة والدخول
 // ==========================================
-app.get('/', (req, res) => res.render('index', { user: req.session.user }));
+app.get('/', (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  res.render('index', { user: req.session.user });
+});
 
 app.get('/public-rules', async (req, res) => {
   const content = await db.get('content', { publicRules: [] });
@@ -351,9 +354,10 @@ app.post('/content/delete', async (req, res) => {
 // ==========================================
 // 📝 نظام التقديم والأكاديمية
 // ==========================================
+
 app.get('/jobs', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
-  if (!req.session.user.perms.isActivated || req.session.user.perms.isPolice) return res.redirect('/');
+  if (req.session.user.perms.isPolice) return res.redirect('/');
 
   const appsDB = await db.get('apps', {});
   const settings = await db.get('settings', { appsOpen: false });
