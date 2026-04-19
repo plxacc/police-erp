@@ -1,210 +1,181 @@
 :root {
-    --bg: #07090f;
-    --bg-card: #0f141d;
-    --bg-card-2: #111827;
+  --bg-main: #0a0d12;
+  --bg-surface: #10151d;
+  --bg-surface-2: #151c26;
+  --bg-surface-3: #1b2430;
 
-    --primary: #22a6f2;
-    --primary-2: #0ea5e9;
-    --success: #16a34a;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --special: #8b5cf6;
+  --primary: #28a4f6;
+  --primary-soft: rgba(40, 164, 246, 0.12);
 
-    --text-main: #e5edf6;
-    --text-muted: #9fb0c3;
-    --border: rgba(255,255,255,0.08);
-    --border-strong: rgba(255,255,255,0.12);
+  --success: #25b864;
+  --success-soft: rgba(37, 184, 100, 0.12);
+
+  --danger: #ef4b4b;
+  --danger-soft: rgba(239, 75, 75, 0.12);
+
+  --warning: #f3a81f;
+  --warning-soft: rgba(243, 168, 31, 0.12);
+
+  --special: #8c74ff;
+  --special-soft: rgba(140, 116, 255, 0.12);
+
+  --text-main: #eaf1f8;
+  --text-muted: #9daec0;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --radius: 14px;
+  --radius-sm: 10px;
 }
 
 /* =========================
    أساسيات
    ========================= */
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
-    scroll-behavior: auto;
+  scroll-behavior: auto;
 }
 
 body {
-    background: #07090f;
-    color: var(--text-main);
-    font-family: Tahoma, "Segoe UI", Arial, sans-serif;
-    direction: rtl;
-    min-height: 100vh;
-    overflow-x: hidden;
-    line-height: 1.55;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Tajawal", "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+  direction: rtl;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  line-height: 1.75;
+  font-size: 15px;
 }
 
-/* ✅ الشعار الخلفي - أوضح وأكبر وفي المنتصف */
+/* شعار الخلفية - واضح وكبير وفي الوسط */
 body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url('/logo.png');
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: min(1050px, 88vw);
-    opacity: 0.11;
-    pointer-events: none;
-    z-index: -1;
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('/logo.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: min(1920px, 108vw);
+  opacity: 0.20;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* =========================
    النافبار
    ========================= */
 .navbar {
-    background: #0c1017;
-    padding: 12px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+  background: #0d1218;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .navbar h2 {
-    font-size: 23px;
-    font-weight: 800;
-    color: #ffffff;
-    letter-spacing: 0.25px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0;
 }
 
 .nav-links {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
-    color: var(--text-main);
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    background: rgba(255,255,255,0.02);
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .nav-links a:hover {
-    background: rgba(34, 166, 242, 0.12);
-    border-color: rgba(34, 166, 242, 0.25);
-    color: #fff;
+  background: rgba(40, 164, 246, 0.12);
+  border-color: rgba(40, 164, 246, 0.24);
+  color: #fff;
 }
 
 /* =========================
-   الحاويات والبطاقات
+   الحاوية
    ========================= */
 .container {
-    padding: 28px 4%;
-    max-width: 1500px;
-    margin: auto;
+  padding: 28px 4%;
+  max-width: 1500px;
+  margin: auto;
 }
 
+.fade-in {
+  animation: none;
+}
+
+/* =========================
+   البطاقات
+   ========================= */
 .card,
 .app-card,
 .profile-section,
 .hub-card,
 .item-card {
-    background: linear-gradient(180deg, rgba(16, 20, 28, 0.96), rgba(10, 14, 22, 0.96));
-    border: 1px solid var(--border);
-    border-top: 2px solid var(--primary);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 18px;
-    box-shadow: none;
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(180deg, rgba(17, 23, 32, 0.97), rgba(11, 16, 24, 0.97));
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
-/* نخلي الهوفر خفيف جدًا */
 .card:hover,
-.app-card:hover {
-    border-color: var(--border-strong);
+.app-card:hover,
+.profile-section:hover,
+.hub-card:hover {
+  border-color: var(--border-strong);
 }
 
 /* تلوين أقسام معينة */
 .app-card[style*="#e74c3c"],
 .card[style*="--danger"],
 .profile-section.section-red {
-    border-top-color: var(--danger) !important;
+  border-top-color: var(--danger) !important;
 }
 
 .app-card[style*="#9B59B6"],
 .card[style*="--special"],
 .profile-section.section-purple {
-    border-top-color: var(--special) !important;
+  border-top-color: var(--special) !important;
 }
 
 .app-card[style*="#f1c40f"],
 .card[style*="--warning"],
 .profile-section.section-yellow {
-    border-top-color: var(--warning) !important;
+  border-top-color: var(--warning) !important;
 }
 
 .app-card[style*="#2ecc71"],
 .card[style*="--success"] {
-    border-top-color: var(--success) !important;
-}
-
-/* =========================
-   العناوين القابلة للطي
-   ========================= */
-details summary,
-.collapsible-header {
-    background: #121a24;
-    padding: 15px 16px;
-    border-radius: 12px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    border: 1px solid rgba(34,166,242,0.22);
-    border-right: 4px solid var(--primary);
-    color: white;
-    font-size: 15px;
-    font-weight: 800;
-    list-style: none;
-    outline: none;
-}
-
-details summary::-webkit-details-marker {
-    display: none;
-}
-
-details summary:hover,
-.collapsible-header:hover {
-    background: #172230;
-}
-
-details[open] summary {
-    margin-bottom: 16px;
-}
-
-.summary-rejected {
-    border-right-color: var(--danger) !important;
-    border-color: rgba(239,68,68,0.24) !important;
-    color: #ffb4b4 !important;
-}
-
-.summary-academy,
-.summary-purple {
-    border-right-color: var(--special) !important;
-    border-color: rgba(139,92,246,0.24) !important;
-    color: #d8b4fe !important;
-}
-
-.summary-new {
-    border-right-color: var(--primary) !important;
+  border-top-color: var(--success) !important;
 }
 
 /* =========================
@@ -212,240 +183,362 @@ details[open] summary {
    ========================= */
 .header-title,
 .header-title-blue {
-    text-align: center;
-    background: linear-gradient(180deg, rgba(16, 20, 28, 0.96), rgba(10, 14, 22, 0.96));
-    border: 1px solid var(--border);
-    border-top: 2px solid var(--primary);
-    border-radius: 14px;
-    padding: 18px;
-    margin-bottom: 22px;
-    color: #ffffff;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(17, 23, 32, 0.97), rgba(11, 16, 24, 0.97));
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 22px;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
 }
 
 /* =========================
-   الحقول والأزرار
+   العناوين القابلة للطي
+   ========================= */
+details summary,
+.collapsible-header {
+  background: #131c26;
+  padding: 15px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border: 1px solid rgba(40, 164, 246, 0.22);
+  border-right: 4px solid var(--primary);
+  color: white;
+  font-size: 15px;
+  font-weight: 900;
+  list-style: none;
+  outline: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary:hover,
+.collapsible-header:hover {
+  background: #182230;
+}
+
+details[open] summary {
+  margin-bottom: 16px;
+}
+
+.summary-rejected {
+  border-right-color: var(--danger) !important;
+  border-color: rgba(239, 75, 75, 0.22) !important;
+  color: #ffb8b8 !important;
+}
+
+.summary-academy,
+.summary-purple {
+  border-right-color: var(--special) !important;
+  border-color: rgba(140, 116, 255, 0.22) !important;
+  color: #d9d0ff !important;
+}
+
+.summary-new {
+  border-right-color: var(--primary) !important;
+}
+
+/* =========================
+   الحقول
    ========================= */
 input,
 textarea,
 select,
 .form-control,
 .search-bar {
-    width: 100%;
-    padding: 12px 14px;
-    background: rgba(8, 12, 18, 0.96);
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 8px;
-    color: #fff;
-    font-family: Tahoma, "Segoe UI", Arial, sans-serif;
-    font-size: 14px;
-    margin-bottom: 12px;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  background: #0d131b;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  color: #fff;
+  font-family: "Tajawal", "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  box-sizing: border-box;
 }
 
 input:focus,
 textarea:focus,
-select:focus {
-    outline: none;
-    border-color: rgba(34,166,242,0.45);
-    background: rgba(10, 15, 23, 1);
+select:focus,
+.form-control:focus,
+.search-bar:focus {
+  outline: none;
+  border-color: rgba(40, 164, 246, 0.45);
+  background: #101823;
 }
 
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.search-bar {
+  margin-bottom: 16px;
+}
+
+/* =========================
+   الأزرار
+   ========================= */
 button,
 .btn {
-    font-family: Tahoma, "Segoe UI", Arial, sans-serif;
-    font-weight: 800;
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-size: 14px;
+  font-family: "Tajawal", "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 900;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
 }
 
 button:active,
 .btn:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 .btn-primary {
-    background: rgba(34, 166, 242, 0.14);
-    color: var(--primary);
-    border-color: rgba(34, 166, 242, 0.35);
+  background: var(--primary-soft);
+  color: #8fd0ff;
+  border-color: rgba(40, 164, 246, 0.32);
 }
 .btn-primary:hover {
-    background: rgba(34, 166, 242, 0.22);
-    color: #fff;
+  background: rgba(40, 164, 246, 0.22);
+  color: #ffffff;
 }
 
 .btn-success {
-    background: rgba(22, 163, 74, 0.14);
-    color: #43d17f;
-    border-color: rgba(22, 163, 74, 0.30);
+  background: var(--success-soft);
+  color: #78e6a3;
+  border-color: rgba(37, 184, 100, 0.28);
 }
 .btn-success:hover {
-    background: rgba(22, 163, 74, 0.22);
-    color: #fff;
+  background: rgba(37, 184, 100, 0.22);
+  color: #ffffff;
 }
 
 .btn-danger {
-    background: rgba(239, 68, 68, 0.14);
-    color: #ff8d8d;
-    border-color: rgba(239, 68, 68, 0.30);
+  background: var(--danger-soft);
+  color: #ff9b9b;
+  border-color: rgba(239, 75, 75, 0.28);
 }
 .btn-danger:hover {
-    background: rgba(239, 68, 68, 0.22);
-    color: #fff;
+  background: rgba(239, 75, 75, 0.22);
+  color: #ffffff;
 }
 
 .btn-warning {
-    background: rgba(245, 158, 11, 0.14);
-    color: #ffcc66;
-    border-color: rgba(245, 158, 11, 0.30);
+  background: var(--warning-soft);
+  color: #ffd27c;
+  border-color: rgba(243, 168, 31, 0.28);
 }
 .btn-warning:hover {
-    background: rgba(245, 158, 11, 0.22);
-    color: #fff;
+  background: rgba(243, 168, 31, 0.22);
+  color: #ffffff;
 }
 
 .btn-secondary {
-    background: rgba(148, 163, 184, 0.12);
-    color: #d7e2ee;
-    border-color: rgba(148, 163, 184, 0.25);
+  background: rgba(157, 174, 192, 0.12);
+  color: #d7e2ee;
+  border-color: rgba(157, 174, 192, 0.22);
 }
 .btn-secondary:hover {
-    background: rgba(148, 163, 184, 0.18);
-    color: #fff;
+  background: rgba(157, 174, 192, 0.18);
+  color: #ffffff;
 }
 
 /* =========================
    النوافذ المنبثقة
    ========================= */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 10000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.84);
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.84);
 }
 
 .modal-content {
-    background: #0f1622 !important;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-top: 3px solid var(--primary);
-    border-radius: 14px;
-    margin: 4% auto;
-    padding: 22px;
-    width: 95%;
-    max-width: 850px;
-    color: white;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: none !important;
-    position: relative;
+  background: #0f1622 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 3px solid var(--primary);
+  border-radius: 14px;
+  margin: 4% auto;
+  padding: 22px;
+  width: 95%;
+  max-width: 860px;
+  color: white;
+  max-height: 85vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: none !important;
+  position: relative;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
 .close-btn {
-    color: var(--text-muted);
-    position: absolute;
-    top: 14px;
-    left: 16px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    background: rgba(255,255,255,0.03);
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  color: var(--text-muted);
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .close-btn:hover {
-    color: #fff;
-    background: rgba(239,68,68,0.22);
+  color: #fff;
+  background: rgba(239,75,75,0.22);
 }
 
 /* =========================
    عناصر إضافية
    ========================= */
 .info-grid {
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.05);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.info-item {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.info-item span {
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .answers-box {
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* جداول أخف */
+/* =========================
+   الجداول
+   ========================= */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
 
 th {
-    background: rgba(34, 166, 242, 0.10);
-    color: var(--primary);
-    padding: 12px;
-    text-align: right;
-    border-bottom: 1px solid rgba(34,166,242,0.18);
+  background: rgba(40, 164, 246, 0.10);
+  color: var(--primary);
+  padding: 12px;
+  text-align: right;
+  border-bottom: 1px solid rgba(40,164,246,0.18);
+  font-size: 14px;
+  font-weight: 900;
 }
 
 td {
-    padding: 12px;
-    background: rgba(255,255,255,0.015);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 12px;
+  background: rgba(255,255,255,0.015);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 tr.searchable-row:hover td {
-    background: rgba(34, 166, 242, 0.04);
+  background: rgba(40, 164, 246, 0.04);
 }
 
-/* Scrollbars */
-.scrollable-box {
-    padding-right: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(34,166,242,0.5) rgba(0,0,0,0.2);
+/* =========================
+   السكروول والحركة داخل الصناديق
+   ========================= */
+.scrollable-box,
+.drag-scroll,
+.answers-box,
+.modal-content {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
+
+.drag-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 600px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0d131b;
+}
+
+.scrollable-box {
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(40,164,246,0.48) rgba(0,0,0,0.2);
+}
+
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.18);
-    border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(34,166,242,0.5);
-    border-radius: 10px;
+  background: rgba(40,164,246,0.48);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(34,166,242,0.72);
+  background: rgba(40,164,246,0.72);
 }
 
-/* Toasts */
+/* =========================
+   Toasts
+   ========================= */
 .toast-container {
-    position: fixed;
-    top: 76px;
-    left: 16px;
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  position: fixed;
+  top: 76px;
+  left: 16px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .toast {
-    min-width: 240px;
-    max-width: 360px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    color: #fff;
-    background: rgba(17,24,39,0.96);
-    border: 1px solid rgba(255,255,255,0.08);
+  min-width: 240px;
+  max-width: 360px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(17,24,39,0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
 }
 
 .toast.success { border-right: 4px solid var(--success); }
@@ -453,102 +546,133 @@ tr.searchable-row:hover td {
 .toast.info    { border-right: 4px solid var(--primary); }
 .toast.warning { border-right: 4px solid var(--warning); }
 
-/* Utility */
+/* =========================
+   إضافات سريعة
+   ========================= */
 .search-bar {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 .fade-in {
-    animation: none;
+  animation: none;
 }
 .grade-input {
-    width: 75px;
-    text-align: center;
-    direction: ltr;
-    font-family: monospace;
+  width: 78px;
+  text-align: center;
+  direction: ltr;
+  font-family: monospace;
 }
 .grade-input[readonly] {
-    opacity: 0.75;
-    cursor: not-allowed;
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+.grade-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 5px;
 }
 .grader-name {
-    font-size: 12px;
-    color: #7cc7ff;
-    display: block;
-    margin-top: 6px;
-    font-weight: bold;
-    background: rgba(255,255,255,0.03);
-    padding: 3px 6px;
-    border-radius: 4px;
-    text-align: center;
+  font-size: 12px;
+  color: #7cc7ff;
+  display: block;
+  margin-top: 6px;
+  font-weight: 800;
+  background: rgba(255,255,255,0.03);
+  padding: 4px 7px;
+  border-radius: 6px;
+  text-align: center;
 }
 
-/* ✅ روابط ملفات العسكري - أوضح */
+/* روابط ملفات العسكري */
 a[href^="/system/personnel/"] {
-    color: #8fd0ff;
-    text-decoration: none;
-    font-weight: 700;
+  color: #8fd0ff;
+  text-decoration: none;
+  font-weight: 800;
 }
 
 a[href^="/system/personnel/"]:hover {
-    color: #b9e3ff;
-    text-decoration: underline;
+  color: #b9e3ff;
+  text-decoration: underline;
+}
+
+/* صور العناصر داخل الكروت */
+.item-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+
+.item-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.item-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.8;
 }
 
 /* =========================
    الجوال
    ========================= */
 @media (max-width: 900px) {
-    body::before {
-        background-size: 82vw;
-        opacity: 0.08;
-    }
+  body::before {
+    background-size: 88vw;
+    opacity: 0.09;
+  }
 
-    .navbar {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-        padding: 12px 14px;
-    }
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 14px;
+  }
 
-    .nav-links {
-        gap: 8px;
-    }
+  .nav-links {
+    gap: 8px;
+  }
 
-    .nav-links a {
-        font-size: 13px;
-        padding: 7px 10px;
-    }
+  .nav-links a {
+    font-size: 13px;
+    padding: 7px 10px;
+  }
 
-    .navbar h2 {
-        font-size: 20px;
-        animation: none;
-    }
+  .navbar h2 {
+    font-size: 20px;
+  }
 
-    .container {
-        padding: 18px 12px;
-    }
+  .container {
+    padding: 18px 12px;
+  }
 
-    .card,
-    .app-card,
-    .profile-section,
-    .hub-card,
-    .item-card {
-        padding: 16px;
-    }
+  .card,
+  .app-card,
+  .profile-section,
+  .hub-card,
+  .item-card {
+    padding: 16px;
+  }
 
-    .modal-content {
-        width: 96%;
-        margin: 8% auto;
-        padding: 18px;
-    }
+  .modal-content {
+    width: 96%;
+    margin: 8% auto;
+    padding: 18px;
+  }
 }
 
-/* تفضيل تقليل الحركة */
+/* =========================
+   تقليل الحركة
+   ========================= */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-        scroll-behavior: auto !important;
-        filter: none !important;
-    }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+    filter: none !important;
+  }
 }
