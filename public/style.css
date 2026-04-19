@@ -1,5 +1,5 @@
 :root {
-    --bg-main: #07090f;
+    --bg: #07090f;
     --bg-card: #0f141d;
     --bg-card-2: #111827;
 
@@ -39,16 +39,16 @@ body {
     line-height: 1.55;
 }
 
-/* نخفف الخلفية جدًا */
+/* ✅ الشعار الخلفي - أوضح وأكبر وفي المنتصف */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
     background-image: url('/logo.png');
     background-repeat: no-repeat;
-    background-position: center top 70px;
-    background-size: min(700px, 70vw);
-    opacity: 0.06;
+    background-position: center center;
+    background-size: min(1050px, 88vw);
+    opacity: 0.11;
     pointer-events: none;
     z-index: -1;
 }
@@ -57,8 +57,8 @@ body::before {
    النافبار
    ========================= */
 .navbar {
-    background: rgba(8, 11, 17, 0.96);
-    padding: 12px 18px;
+    background: #0c1017;
+    padding: 12px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -70,10 +70,10 @@ body::before {
 }
 
 .navbar h2 {
-    font-size: 22px;
+    font-size: 23px;
     font-weight: 800;
     color: #ffffff;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.25px;
 }
 
 .nav-links {
@@ -97,6 +97,7 @@ body::before {
 .nav-links a:hover {
     background: rgba(34, 166, 242, 0.12);
     border-color: rgba(34, 166, 242, 0.25);
+    color: #fff;
 }
 
 /* =========================
@@ -111,12 +112,13 @@ body::before {
 .card,
 .app-card,
 .profile-section,
-.hub-card {
+.hub-card,
+.item-card {
     background: linear-gradient(180deg, rgba(16, 20, 28, 0.96), rgba(10, 14, 22, 0.96));
     border: 1px solid var(--border);
     border-top: 2px solid var(--primary);
-    border-radius: 12px;
-    padding: 22px;
+    border-radius: 14px;
+    padding: 20px;
     margin-bottom: 18px;
     box-shadow: none;
     position: relative;
@@ -158,9 +160,9 @@ body::before {
    ========================= */
 details summary,
 .collapsible-header {
-    background: rgba(20, 28, 40, 0.95);
-    padding: 16px 18px;
-    border-radius: 10px;
+    background: #121a24;
+    padding: 15px 16px;
+    border-radius: 12px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -169,7 +171,7 @@ details summary,
     border: 1px solid rgba(34,166,242,0.22);
     border-right: 4px solid var(--primary);
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     list-style: none;
     outline: none;
@@ -181,7 +183,7 @@ details summary::-webkit-details-marker {
 
 details summary:hover,
 .collapsible-header:hover {
-    background: rgba(24, 34, 50, 0.98);
+    background: #172230;
 }
 
 details[open] summary {
@@ -201,13 +203,33 @@ details[open] summary {
     color: #d8b4fe !important;
 }
 
+.summary-new {
+    border-right-color: var(--primary) !important;
+}
+
+/* =========================
+   العناوين الرئيسية
+   ========================= */
+.header-title,
+.header-title-blue {
+    text-align: center;
+    background: linear-gradient(180deg, rgba(16, 20, 28, 0.96), rgba(10, 14, 22, 0.96));
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--primary);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 22px;
+    color: #ffffff;
+}
+
 /* =========================
    الحقول والأزرار
    ========================= */
 input,
 textarea,
 select,
-.form-control {
+.form-control,
+.search-bar {
     width: 100%;
     padding: 12px 14px;
     background: rgba(8, 12, 18, 0.96);
@@ -375,8 +397,8 @@ th {
 
 td {
     padding: 12px;
-    background: rgba(255,255,255,0.02);
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.015);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 tr.searchable-row:hover td {
@@ -460,13 +482,25 @@ tr.searchable-row:hover td {
     text-align: center;
 }
 
+/* ✅ روابط ملفات العسكري - أوضح */
+a[href^="/system/personnel/"] {
+    color: #8fd0ff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+a[href^="/system/personnel/"]:hover {
+    color: #b9e3ff;
+    text-decoration: underline;
+}
+
 /* =========================
    الجوال
    ========================= */
 @media (max-width: 900px) {
     body::before {
-        background-size: 72vw;
-        opacity: 0.04;
+        background-size: 82vw;
+        opacity: 0.08;
     }
 
     .navbar {
@@ -497,7 +531,8 @@ tr.searchable-row:hover td {
     .card,
     .app-card,
     .profile-section,
-    .hub-card {
+    .hub-card,
+    .item-card {
         padding: 16px;
     }
 
@@ -505,13 +540,6 @@ tr.searchable-row:hover td {
         width: 96%;
         margin: 8% auto;
         padding: 18px;
-    }
-
-    /* إلغاء أي تأثيرات ثقيلة على الجوال */
-    .card, .app-card, .profile-section, .hub-card,
-    .navbar, details summary, .modal, .collapsible-header {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
     }
 }
 
