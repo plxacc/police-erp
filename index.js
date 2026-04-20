@@ -184,7 +184,10 @@ app.get('/callback', async (req, res) => {
         const response = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({ client_id: process.env.CLIENT_ID, client_secret: process.env.CLIENT_SECRET, code: req.query.code, grant_type: 'authorization_code', redirect_uri: process.env.REDIRECT_URI, scope: 'identify guilds' }));
         const userRes = await axios.get('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${response.data.access_token}` } });
         req.session.user = userRes.data; res.redirect('/');
-    } catch (e) { res.send('خطأ.'); }
+    } catch (e) { 
+    console.error(e.response ? e.response.data : e);
+    res.status(500).send('حدث خطأ في الديسكورد: ' + (e.response ? JSON.stringify(e.response.data) : e.message)); 
+}
 });
 
 // مسارات إدارة المحتوى (للقوانين)
